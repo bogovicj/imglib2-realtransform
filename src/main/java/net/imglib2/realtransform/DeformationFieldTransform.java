@@ -149,6 +149,6 @@ public class DeformationFieldTransform<T extends RealType<T>> implements RealTra
 	@Override
 	public RealTransform copy()
 	{
-		return new DeformationFieldTransform< T >( this.defFieldReal );
+		return new DeformationFieldTransform< >( this.defFieldReal );
 	}
 }
