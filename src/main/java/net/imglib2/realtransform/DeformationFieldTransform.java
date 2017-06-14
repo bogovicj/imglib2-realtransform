@@ -91,6 +91,11 @@ public class DeformationFieldTransform<T extends RealType<T>> implements RealTra
 		return numDim;
 	}
 
+	public RealRandomAccess< T > getDefFieldAcess()
+	{
+		return defFieldAccess;
+	}
+
 	@Override
 	public void apply( double[] source, double[] target )
 	{
