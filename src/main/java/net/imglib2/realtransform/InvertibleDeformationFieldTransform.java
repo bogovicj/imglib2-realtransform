@@ -34,13 +34,12 @@
 
 package net.imglib2.realtransform;
 
-import java.util.Arrays;
-
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
+import net.imglib2.realtransform.inverse.BacktrackingLineSearch;
 import net.imglib2.type.numeric.RealType;
 
 /**
@@ -88,7 +87,7 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 	{
 		this( new DeformationFieldTransform<>( defFieldReal ));
 	}
-	
+
 	public void setTolerance( final double tol )
 	{
 		tolerance = tol;
@@ -109,6 +108,11 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 	public int numTargetDimensions()
 	{
 		return def.numTargetDimensions();
+	}
+
+	public double getError()
+	{
+		return currentError;
 	}
 
 	@Override
@@ -149,7 +153,7 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 //		double squareTolerance = tolerance * tolerance;
 		RealRandomAccess< T > defAccess = def.getDefFieldAcess();
 		
-		DefFieldInverter inv = new DefFieldInverter( source.length );
+		BacktrackingLineSearch inv = new BacktrackingLineSearch( def );
 		inv.setTarget( target );
 
 		int i = 0;
@@ -160,13 +164,13 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 			apply( source, tmp );
 			double squaredError = inv.squaredErrorAt( source );
 			double olderror = Math.sqrt( squaredError );
-			System.out.println( "    old guess: " + Arrays.toString( source ));
-			System.out.println( "      goes to: " + Arrays.toString( tmp ));
+//			System.out.println( "    old guess: " + Arrays.toString( source ));
+//			System.out.println( "      goes to: " + Arrays.toString( tmp ));
 			
 			// return right away if the initial estimate is good enough
 			if( olderror < tolerance )
 			{
-				System.out.println( "returning with error: " + olderror );
+//				System.out.println( "returning with error: " + olderror );
 				return;
 			}
 			
@@ -181,9 +185,9 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 				defAccess.fwd( numDim );
 			}
 			inv.setDirection( displacement );
-			System.out.println( "old step size: " + stepSize );
+//			System.out.println( "old step size: " + stepSize );
 			stepSize = inv.backtrackingLineSearch( c, beta, lineSearchMaxTries, stepSize );
-			System.out.println( "new step size: " + stepSize );
+//			System.out.println( "new step size: " + stepSize );
 
 
 			for ( int d = 0; d < numDim; d++ )
@@ -192,12 +196,11 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 			}
 
 			apply( tmp, srcXfm );
-			squaredError = inv.squaredError( srcXfm );
+			squaredError = inv.squaredErrorAt( srcXfm );
 			currentError = Math.sqrt( squaredError );
 			
 			if( currentError > olderror )
 			{
-				System.out.println( "could not improve...returning" );
 				return;
 			}
 			else
@@ -205,12 +208,12 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 				System.arraycopy( tmp, 0, source, 0, source.length );
 			}
 			
-			System.out.println( "    new guess: " + Arrays.toString( source ));
-			System.out.println( "      goes to: " + Arrays.toString( srcXfm ));
-			System.out.println( "       target: " + Arrays.toString( target ));
-			System.out.println( "old error: " + olderror );
-			System.out.println( "new error: " + currentError );
-			System.out.println( " " );
+//			System.out.println( "    new guess: " + Arrays.toString( source ));
+//			System.out.println( "      goes to: " + Arrays.toString( srcXfm ));
+//			System.out.println( "       target: " + Arrays.toString( target ));
+//			System.out.println( "old error: " + olderror );
+//			System.out.println( "new error: " + currentError );
+//			System.out.println( " " );
 			
 			if( currentError < tolerance )
 				break;
@@ -255,11 +258,11 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 		public void setDirection( double[] dir )
 		{
 			this.dir = dir;
-			System.out.println( "    dir     : " + Arrays.toString( dir ));
+//			System.out.println( "    dir     : " + Arrays.toString( dir ));
 			double mag = dirMag();
 			for ( int i = 0; i < nd; i++ )
 				dir[ i ] = dir[ i ] / mag;
-			System.out.println( "    dir norm: " + Arrays.toString( dir ));
+//			System.out.println( "    dir norm: " + Arrays.toString( dir ));
 		}
 		
 		private double squaredError( double[] estimate )
@@ -287,8 +290,8 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 		public double dirMag()
 		{
 			double mag = 0;
-			for ( int i = 0; i < nd; i++ )
-				mag += dir[ i ] * dir[ i ];
+			for ( int i = 0; i < dir.length; i++ )
+				mag += ( dir[ i ] * dir[ i ] );
 			
 			return Math.sqrt( mag );
 		}
@@ -321,7 +324,7 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 				k++;
 			}
 	
-			System.out.println( "selected step size after " + k + " tries" );
+//			System.out.println( "selected step size after " + k + " tries" );
 	
 			return t;
 		}
@@ -376,6 +379,11 @@ public class InvertibleDeformationFieldTransform<T extends RealType<T>> implemen
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	public DeformationFieldTransform< T > getForwardDeformation()
+	{
+		return def;
 	}
 
 	@Override
