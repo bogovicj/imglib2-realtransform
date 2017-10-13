@@ -10,7 +10,7 @@
 	</parent>
 
 	<artifactId>imglib2-realtransform</artifactId>
-	<version>2.0.0-beta-38-SNAPSHOT</version>
+	<version>2.0.0-beta-39-SNAPSHOT</version>
 
 	<name>ImgLib2 Real Transform</name>
 	<description>Real space coordinate transformations.</description>
@@ -146,7 +146,7 @@
 		<!-- NB: for SciJava dependencies -->
 		<repository>
 			<id>imagej.public</id>
-			<url>http://code.imagej.net/maven2/releases</url>
+			<url>https://maven.imagej.net/content/groups/public</url>
 		</repository>
 	</repositories>
 
@@ -162,6 +162,8 @@ Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
 Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
 Mark Longair, Brian Northan, Nick Perry, Curtis Rueden, Johannes Schindelin,
 Jean-Yves Tinevez and Michael Zinsmaier.</license.copyrightOwners>
+
+		<jitk-tps.version>3.0.0</jitk-tps.version>
 	</properties>
 
 	<dependencies>
