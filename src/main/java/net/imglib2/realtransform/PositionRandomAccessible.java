@@ -2,7 +2,7 @@
  * #%L
  * ImgLib2: a general-purpose, multidimensional image processing library.
  * %%
- * Copyright (C) 2009 - 2016 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
+ * Copyright (C) 2009 - 2017 Tobias Pietzsch, Stephan Preibisch, Stephan Saalfeld,
  * John Bogovic, Albert Cardona, Barry DeZonia, Christian Dietz, Jan Funke,
  * Aivar Grislis, Jonathan Hale, Grant Harris, Stefan Helfrich, Mark Hiner,
  * Martin Horn, Steffen Jaensch, Lee Kamentsky, Larry Lindsey, Melissa Linkert,
@@ -34,81 +34,73 @@
 
 package net.imglib2.realtransform;
 
-import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
-import net.imglib2.RealLocalizable;
-import net.imglib2.RealPoint;
-import net.imglib2.RealPositionable;
+import net.imglib2.Interval;
+import net.imglib2.Point;
+import net.imglib2.RandomAccess;
+import net.imglib2.RandomAccessible;
+import net.imglib2.type.numeric.integer.LongType;
 
 /**
- * An <em>n</em>-dimensional thin plate spline transform backed by John
- * Bogovic's <a href="https://github.com/saalfeldlab/jitk-tps">jitk-tps</a>
- * library.
+ * A {@link RandomAccessible} over the <em>d</em>-th position of discrete
+ * coordinate space.
  *
- * @author Stephan Saalfeld
+ * @author Stephan Saalfeld &lt;saalfelds@janelia.hhmi.org&gt;
  */
-public class ThinplateSplineTransform implements RealTransform
+public class PositionRandomAccessible implements RandomAccessible< LongType >
 {
-	final private ThinPlateR2LogRSplineKernelTransform tps;
+	private final int n;
+	private final int d;
 
-	final private double[] a;
-
-	final private double[] b;
-
-	final private RealPoint rpa;
-
-	final static private ThinPlateR2LogRSplineKernelTransform init( final double[][] p, final double[][] q )
+	public PositionRandomAccessible( final int numDimensions, final int d )
 	{
-		assert p.length == q.length;
-
-		final ThinPlateR2LogRSplineKernelTransform tps = new ThinPlateR2LogRSplineKernelTransform( p.length, p, q );
-
-		return tps;
+		this.n = numDimensions;
+		this.d = d;
 	}
 
-	public ThinplateSplineTransform( final ThinPlateR2LogRSplineKernelTransform tps )
+	public class PositionRandomAccess extends Point implements RandomAccess< LongType >
 	{
-		this.tps = tps;
-		a = new double[ tps.getNumDims() ];
-		b = new double[ a.length ];
-		rpa = RealPoint.wrap( a );
-	}
+		private final LongType t = new LongType();
 
-	public ThinplateSplineTransform( final double[][] p, final double[][] q )
-	{
-		this( init( p, q ) );
-	}
+		public PositionRandomAccess()
+		{
+			super( PositionRandomAccessible.this.n );
+		}
 
-	@Override
-	public void apply( final double[] source, final double[] target )
-	{
-		tps.apply( source, target );
-	}
+		@Override
+		public LongType get()
+		{
+			t.set( position[ d ] );
+			return t;
+		}
 
-	@Override
-	public void apply( final RealLocalizable source, final RealPositionable target )
-	{
-		rpa.setPosition( source );
-		tps.apply( a, b );
-		for ( int d = 0; d < a.length; ++d )
-			target.setPosition( b[ d ], d );
+		@Override
+		public PositionRandomAccess copy()
+		{
+			return new PositionRandomAccess();
+		}
+
+		@Override
+		public RandomAccess< LongType > copyRandomAccess()
+		{
+			return copy();
+		}
 	}
 
 	@Override
-	public ThinplateSplineTransform copy()
+	public int numDimensions()
 	{
-		/* tps is stateless and constant and can therefore be reused */
-		return new ThinplateSplineTransform( tps );
+		return n;
 	}
 
 	@Override
-	public int numSourceDimensions()
+	public RandomAccess< LongType > randomAccess()
 	{
-		return tps.getNumDims();
+		return new PositionRandomAccess();
 	}
 
 	@Override
-	public int numTargetDimensions()
+	public RandomAccess< LongType > randomAccess( final Interval interval )
 	{
-		return tps.getNumDims();
+		return randomAccess();
 	}
 }
