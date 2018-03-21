@@ -34,12 +34,15 @@
 
 package net.imglib2.realtransform;
 
+import java.util.Arrays;
+
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPositionable;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
+import net.imglib2.realtransform.inverse.DifferentiableRealTransform;
 import net.imglib2.type.numeric.RealType;
 import net.imglib2.view.Views;
 
@@ -58,7 +61,7 @@ import net.imglib2.view.Views;
  * @author John Bogovic &lt;bogovicj@janelia.hhmi.org&gt;
  *
  */
-public class DeformationFieldTransform<T extends RealType<T>> implements RealTransform
+public class DeformationFieldTransform<T extends RealType<T>> implements DifferentiableRealTransform
 {
 
 	private final RealRandomAccessible< T > defFieldReal;
@@ -128,6 +131,70 @@ public class DeformationFieldTransform<T extends RealType<T>> implements RealTra
 
 			defFieldAccess.fwd( numDim );
 		}
+	}
+
+	public double[][] jacobian( final double[] x )
+	{
+		for ( int d = 0; d < x.length; d++ )
+			defFieldAccess.setPosition( x[ d ], d );
+
+		defFieldAccess.setPosition( 0.0, numDim );
+
+		double dx =  defFieldAccess.get().getRealDouble();
+		double dy =  defFieldAccess.get().getRealDouble();
+		double dz =  defFieldAccess.get().getRealDouble();
+
+		return new double[][]{ 
+			{ dx },
+			{ dy },
+			{ dz } };
+	}
+
+	public double[] direction( final double[] x )
+	{
+		for ( int d = 0; d < x.length; d++ )
+			defFieldAccess.setPosition( x[ d ], d );
+
+		defFieldAccess.setPosition( 0.0, numDim );
+
+		double dx =  defFieldAccess.get().getRealDouble();
+		double dy =  defFieldAccess.get().getRealDouble();
+		double dz =  defFieldAccess.get().getRealDouble();
+
+		return new double[]{ dx, dy, dz };
+	}
+	
+	@Override
+	public void directionToward( final double[] displacement, final double[] x, final double[] y )
+	{
+		assert( displacement.length >= x.length );
+		assert( y.length == x.length );
+
+		// get the displacement vector here
+		defFieldAccess.setPosition( x[ 0 ], 0 );
+		defFieldAccess.setPosition( x[ 1 ], 1 );
+		defFieldAccess.setPosition( x[ 2 ], 2 );
+		defFieldAccess.setPosition( 0.0, numDim );
+		for ( int d = 0; d < numDim; d++ )
+		{
+			displacement[ d ] = -defFieldAccess.get().getRealDouble();
+			defFieldAccess.fwd( numDim );
+		}
+
+		double mag = dirMag( displacement );
+		for ( int i = 0; i < numDim; i++ )
+			displacement[ i ] = displacement[ i ] / mag;
+
+//		System.out.println( "dir toward del: " + Arrays.toString( displacement ) );
+	}
+
+	public double dirMag( final double[] dir )
+	{
+		double mag = 0;
+		for ( int i = 0; i < dir.length; i++ )
+			mag += ( dir[ i ] * dir[ i ] );
+		
+		return Math.sqrt( mag );
 	}
 
 	@Override
