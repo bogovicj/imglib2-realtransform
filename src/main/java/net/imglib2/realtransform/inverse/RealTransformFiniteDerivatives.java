@@ -12,7 +12,7 @@ import net.imglib2.realtransform.RealTransform;
  * @author John Bogovic
  *
  */
-public class RealTransformFiniteDerivatives extends DifferentiableRealTransform implements RealTransform
+public class RealTransformFiniteDerivatives extends AbstractDifferentiableRealTransform
 {
 	protected final RealTransform transform;
 
@@ -28,31 +28,26 @@ public class RealTransformFiniteDerivatives extends DifferentiableRealTransform 
 		this.step = step;
 	}
 
-	@Override
 	public int numSourceDimensions()
 	{
 		return transform.numSourceDimensions();
 	}
 
-	@Override
 	public int numTargetDimensions()
 	{
 		return transform.numTargetDimensions();
 	}
 
-	@Override
 	public void apply( double[] source, double[] target )
 	{
 		transform.apply( source, target );
 	}
 
-	@Override
 	public void apply( RealLocalizable source, RealPositionable target )
 	{
 		transform.apply( source, target );
 	}
 
-	@Override
 	public RealTransform copy()
 	{
 		return new RealTransformFiniteDerivatives( transform );
@@ -93,4 +88,5 @@ public class RealTransformFiniteDerivatives extends DifferentiableRealTransform 
 		}
 		return jacobian;
 	}
+	
 }

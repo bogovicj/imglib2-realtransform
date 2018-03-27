@@ -42,6 +42,7 @@ import jitk.spline.ThinPlateR2LogRSplineKernelTransform;
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
 import net.imglib2.RealPositionable;
+import net.imglib2.realtransform.inverse.AbstractDifferentiableRealTransform;
 import net.imglib2.realtransform.inverse.DifferentiableRealTransform;
 
 /**
@@ -52,7 +53,7 @@ import net.imglib2.realtransform.inverse.DifferentiableRealTransform;
  * @author Stephan Saalfeld
  * @author John Bogovic
  */
-public class ThinplateSplineTransform extends DifferentiableRealTransform implements RealTransform
+public class ThinplateSplineTransform extends AbstractDifferentiableRealTransform implements RealTransform
 {
 	final private ThinPlateR2LogRSplineKernelTransform tps;
 
@@ -163,26 +164,4 @@ public class ThinplateSplineTransform extends DifferentiableRealTransform implem
 		return jacobian;
 	}
 
-	/*
-	 * @Override public void directionToward( final double[] displacement, final
-	 * double[] x, final double[] y ) { if( dir == null ) { initializeInverse();
-	 * } jacobian = new DenseMatrix64F( tps.jacobian( x ));
-	 * 
-	 * // the forward transform tps.apply( x, estimateXfm );
-	 * 
-	 * // update error vector for( int i = 0; i < displacement.length; i++ ) {
-	 * errorV.set( i, y[ i ] - estimateXfm[ i ] ); }
-	 * 
-	 * // use the jacobian to estimate the descent direction CommonOps.solve(
-	 * jacobian, errorV, dir );
-	 * 
-	 * double norm = NormOps.normP2( dir ); CommonOps.divide( norm, dir );
-	 * 
-	 * // compute the directional derivative and magnitude CommonOps.mult(
-	 * jacobian, dir, directionalDeriv ); CommonOps.multTransA( dir,
-	 * directionalDeriv, descentDirectionMag );
-	 * 
-	 * for( int i = 0; i < displacement.length; i++ ) displacement[ i ] =
-	 * dir.get( i ); }
-	 */
 }

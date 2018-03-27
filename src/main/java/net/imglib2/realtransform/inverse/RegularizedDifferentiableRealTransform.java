@@ -15,7 +15,7 @@ import net.imglib2.realtransform.RealTransform;
  * @author John Bogovic &lt;bogovicj@janelia.hhmi.org&gt;
  *
  */
-public class RegularizedDifferentiableRealTransform extends DifferentiableRealTransform
+public class RegularizedDifferentiableRealTransform extends AbstractDifferentiableRealTransform
 {
 
 	protected final DifferentiableRealTransform dxfm;
@@ -44,31 +44,26 @@ public class RegularizedDifferentiableRealTransform extends DifferentiableRealTr
 		return jac;
 	}
 
-	@Override
 	public int numSourceDimensions()
 	{
 		return dxfm.numSourceDimensions();
 	}
 
-	@Override
 	public int numTargetDimensions()
 	{
 		return dxfm.numTargetDimensions();
 	}
 
-	@Override
 	public void apply( double[] source, double[] target )
 	{
 		dxfm.apply( source, target );
 	}
 
-	@Override
 	public void apply( RealLocalizable source, RealPositionable target )
 	{
 		dxfm.apply( source, target );
 	}
 
-	@Override
 	public RealTransform copy()
 	{
 		return dxfm.copy();

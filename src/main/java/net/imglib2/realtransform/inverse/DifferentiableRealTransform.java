@@ -14,7 +14,7 @@ import net.imglib2.realtransform.RealTransform;
  * @author John Bogovic &lt;bogovicj@janelia.hhmi.org&gt;
  *
  */
-public abstract class DifferentiableRealTransform implements RealTransform
+public interface DifferentiableRealTransform extends RealTransform
 {
 
 	/**
@@ -24,7 +24,7 @@ public abstract class DifferentiableRealTransform implements RealTransform
 	 *            the point
 	 * @return the jacobian
 	 */
-	public abstract AffineTransform jacobian( double[] x );
+	public AffineTransform jacobian( double[] x );
 
 	/**
 	 * Writes the direction <em>displacement</em> in which to move the input
@@ -41,32 +41,6 @@ public abstract class DifferentiableRealTransform implements RealTransform
 	 *            the destination point
 	 * @return the direction
 	 */
-	public void directionToward( final double[] displacement, final double[] x, final double[] y )
-	{
-		double[] err = new double[ x.length ];
-		for ( int i = 0; i < x.length; i++ )
-			err[ i ] = y[ i ] - x[ i ];
-
-		AffineTransform j = jacobian( x );
-		double[] dir = new double[ x.length ];
-		j.inverse().apply( err, dir );
-
-		double norm = 0.0;
-		for ( int i = 0; i < dir.length; i++ )
-			norm += ( dir[ i ] * dir[ i ] );
-
-		norm = Math.sqrt( norm );
-
-		for ( int i = 0; i < dir.length; i++ )
-			dir[ i ] /= norm;
-
-		// compute the directional derivative
-		double[] directionalDerivative = new double[ dir.length ];
-		j.apply( dir, directionalDerivative );
-
-		double descentDirectionMag = 0.0;
-		for ( int i = 0; i < dir.length; i++ )
-			descentDirectionMag += ( dir[ i ] * directionalDerivative[ i ] );
-	}
+	public void directionToward( final double[] displacement, final double[] x, final double[] y );
 
 }

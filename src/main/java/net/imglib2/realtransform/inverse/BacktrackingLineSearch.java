@@ -28,7 +28,7 @@ public class BacktrackingLineSearch
 	double currentSquaredError;
 	
 	private final int nd;
-	private final DifferentiableRealTransform fwdXfm;
+	private DifferentiableRealTransform fwdXfm;
 	
 	// optimization parameters
 	private int maxIters = 1000;	// maximum iterations
@@ -43,7 +43,15 @@ public class BacktrackingLineSearch
 	
 	protected static Logger logger = LogManager.getLogger( 
 			BacktrackingLineSearch.class.getName() );
-	
+
+	public BacktrackingLineSearch( final int nd )
+	{
+		this.nd = nd;
+		y = new double[ nd ];
+		x_ap = new double[ nd ];
+		y_ap = new double[ nd ];
+	}
+
 	public BacktrackingLineSearch( final DifferentiableRealTransform fwdXfm )
 	{
 		this.fwdXfm = fwdXfm;
@@ -53,6 +61,12 @@ public class BacktrackingLineSearch
 		y_ap = new double[ nd ];
 	}
 
+	public void setForwardTransform( final DifferentiableRealTransform fwdXfm )
+	{
+		assert( fwdXfm.numSourceDimensions() == nd );
+		this.fwdXfm = fwdXfm;
+	}
+	
 	public void setC( final double c )
 	{
 		this.c = c;
@@ -73,7 +87,12 @@ public class BacktrackingLineSearch
 		this.maxIters = maxIters;
 	}
 
-	public void setEpsilon( final int eps )
+	public void setMaxLineSearchTries( final int lineSearchMaxTries )
+	{
+		this.lineSearchMaxTries = lineSearchMaxTries;
+	}
+
+	public void setEpsilon( final double eps )
 	{
 		this.eps = eps;
 		epsSquared = eps*eps;
@@ -94,13 +113,13 @@ public class BacktrackingLineSearch
 	public void setDirection( final double[] dir )
 	{
 		this.dir = dir;
-		logger.trace( "    dir     : " + Arrays.toString( dir ));
+//		logger.trace( "    dir     : " + Arrays.toString( dir ));
 
 		double mag = dirMag();
 		for ( int i = 0; i < nd; i++ )
 			dir[ i ] = dir[ i ] / mag;
 
-		logger.trace( "    dir norm: " + Arrays.toString( dir ));
+//		logger.trace( "    dir norm: " + Arrays.toString( dir ));
 	}
 	
 	/**
@@ -198,13 +217,21 @@ public class BacktrackingLineSearch
 		//double m = sumSquaredErrorsDeriv( this.target, y_ap ); // * descentDirectionMag.get( 0 );
 		double m = 1;
 
-		logger.trace( "   x   : " + Arrays.toString( x ));
-		logger.trace( "   x_ap: " + Arrays.toString( x_ap ));
-		logger.trace( "   y   : " + Arrays.toString( y ));
-		logger.trace( "   y_ap: " + Arrays.toString( y_ap ));
-		logger.trace( "   fx      : " + fx );
-		logger.trace( "   fx_ap   : " + fx_ap );
-		logger.trace( "   fx + ctm: " + ( fx - (c*t*m)) ) ;
+//		logger.trace( "   x   : " + Arrays.toString( x ));
+//		logger.trace( "   x_ap: " + Arrays.toString( x_ap ));
+//		logger.trace( "   y   : " + Arrays.toString( y ));
+//		logger.trace( "   y_ap: " + Arrays.toString( y_ap ));
+//		logger.trace( "   fx      : " + fx );
+//		logger.trace( "   fx_ap   : " + fx_ap );
+//		logger.trace( "   fx + ctm: " + ( fx - (c*t*m)) ) ;
+
+//		System.out.println( "   x   : " + Arrays.toString( x ));
+//		System.out.println( "   x_ap: " + Arrays.toString( x_ap ));
+//		System.out.println( "   y   : " + Arrays.toString( y ));
+//		System.out.println( "   y_ap: " + Arrays.toString( y_ap ));
+//		System.out.println( "   fx      : " + fx );
+//		System.out.println( "   fx_ap   : " + fx_ap );
+//		System.out.println( "   fx + ctm: " + ( fx - (c*t*m)) ) ;
 
 		if ( fx_ap < fx - c * t * m )
 		{
@@ -229,17 +256,23 @@ public class BacktrackingLineSearch
 	 */
 	public double iterativeInverse( final double[] source, final double[] destination )
 	{
+//		System.out.println( "start source: " + Arrays.toString( source ) );
+//		System.out.println( " " );
+
 		// keep track of target globally
 		this.target = destination;
 		
 		// initialize at destination
-		System.arraycopy( destination, 0, source, 0, source.length );
+//		System.arraycopy( destination, 0, source, 0, source.length );
 
 		double stepSize = initStepSize;		
 		
 		// temporary destination
 		double[] tmp = new double[ nd ];
 		
+		// temporary src
+		double[] tmpsrc = new double[ nd ];
+				
 		// the displacement
 		double[] displacement = new double[ nd ];
 		
@@ -249,47 +282,66 @@ public class BacktrackingLineSearch
 		int i = 0;
 		while( i < maxIters )
 		{
-			System.out.println( "i: " + i );
+			stepSize = initStepSize;
+//			System.out.println( "i: " + i );
 
 			setEstimate( source );
 
 			fwdXfm.directionToward( displacement, source, destination );
-			System.out.println( "displacement:` " + Arrays.toString( displacement ));
+//			System.out.println( "displacement: " + Arrays.toString( displacement ));
 
 			setDirection( displacement );
 			stepSize = backtrackingLineSearch( c, beta, lineSearchMaxTries, stepSize );
-			
-			System.out.println( "stepSize: " + stepSize );
-			
+
+//			System.out.println( "stepSize: " + stepSize );
+
 			for ( int d = 0; d < nd; d++ )
 			{
-				tmp[ d ] = source[ d ] + stepSize * displacement[ d ]; 
+				tmpsrc[ d ] = source[ d ] + stepSize * displacement[ d ]; 
 			}
-			System.out.println( "source: " + Arrays.toString( source ) );
-			
-			fwdXfm.apply( source, tmp );
-			currentError = squaredError( tmp );
+//			System.out.println( "tmpsrc: " + Arrays.toString( tmpsrc ) );
 
+			fwdXfm.apply( tmpsrc, tmp );
+			currentError = squaredError( tmp );
+//			System.out.println( "tmpdst: " + Arrays.toString( tmp ) );
+
+//			System.out.println( "squared err: " + currentError );
 			if( currentError > olderror )
 			{
+//				System.out.println( "breaking early");
 				// make sure to return error (not squared)
 				return Math.sqrt( currentError );
 			}
 			else
 			{
-				System.arraycopy( tmp, 0, source, 0, source.length );
+				System.arraycopy( tmpsrc, 0, source, 0, source.length );
 			}
-			
-			System.out.println( "source: " + Arrays.toString( source ) );
-			System.out.println( " " );
-			
-			if( currentError < epsSquared )
-				break;
+			olderror = currentError;
 
+//			System.out.println( "source: " + Arrays.toString( source ) );
+//			System.out.println( " " );
+
+			if( currentError < epsSquared )
+			{
+//				System.out.println( "breaking early");
+				break;
+			}
 			i++;
 		}
-		
+
+		currentSquaredError = currentError;
+
 		// make sure to return error (not squared)		
 		return Math.sqrt( currentError );
+	}
+
+	public double getLastSquaredError()
+	{
+		return currentSquaredError;
+	}
+
+	public double getLastError()
+	{
+		return Math.sqrt( currentSquaredError );
 	}
 }
