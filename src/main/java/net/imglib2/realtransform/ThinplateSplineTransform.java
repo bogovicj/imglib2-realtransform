@@ -52,7 +52,7 @@ import net.imglib2.realtransform.inverse.DifferentiableRealTransform;
  * @author Stephan Saalfeld
  * @author John Bogovic
  */
-public class ThinplateSplineTransform implements DifferentiableRealTransform
+public class ThinplateSplineTransform extends DifferentiableRealTransform implements RealTransform
 {
 	final private ThinPlateR2LogRSplineKernelTransform tps;
 
@@ -61,13 +61,13 @@ public class ThinplateSplineTransform implements DifferentiableRealTransform
 	final private double[] b;
 
 	final private RealPoint rpa;
-	
+
 	double[] estimateXfm;
 
 	/*
 	 * The jacobian matrix
 	 */
-	private DenseMatrix64F jacobian;
+	private AffineTransform jacobian;
 
 	/*
 	 * derivative in direction of dir (the descent direction )
@@ -80,7 +80,7 @@ public class ThinplateSplineTransform implements DifferentiableRealTransform
 	private DenseMatrix64F dir;
 
 	/*
-	 * computes dir^T directionalDeriv  (where dir^T is often -directionalDeriv)
+	 * computes dir^T directionalDeriv (where dir^T is often -directionalDeriv)
 	 */
 	private DenseMatrix64F descentDirectionMag;
 
@@ -155,35 +155,34 @@ public class ThinplateSplineTransform implements DifferentiableRealTransform
 		descentDirectionMag = new DenseMatrix64F( 1, 1 );
 	}
 
-	@Override
-	public void directionToward(  final double[] displacement, final double[] x, final double[] y )
+	public AffineTransform jacobian( final double[] x )
 	{
-		if( dir == null )
-		{
-			initializeInverse();
-		}
-		jacobian = new DenseMatrix64F( tps.jacobian( x ));
-
-		// the forward transform
-		tps.apply( x, estimateXfm );
-
-		// update error vector
-		for( int i = 0; i < displacement.length; i++ )
-		{
-			errorV.set( i, y[ i ] - estimateXfm[ i ] );
-		}
-
-		// use the jacobian to estimate the descent direction
-		CommonOps.solve( jacobian, errorV, dir );
-
-		double norm = NormOps.normP2( dir );
-		CommonOps.divide( norm, dir );
-
-		// compute the directional derivative and magnitude
-		CommonOps.mult( jacobian, dir, directionalDeriv );
-		CommonOps.multTransA( dir, directionalDeriv, descentDirectionMag );
-
-		for( int i = 0; i < displacement.length; i++ )
-			displacement[ i ] = dir.get( i );
+		double[][] j = tps.jacobian( x );
+		jacobian = new AffineTransform( j.length );
+		jacobian.set( j );
+		return jacobian;
 	}
+
+	/*
+	 * @Override public void directionToward( final double[] displacement, final
+	 * double[] x, final double[] y ) { if( dir == null ) { initializeInverse();
+	 * } jacobian = new DenseMatrix64F( tps.jacobian( x ));
+	 * 
+	 * // the forward transform tps.apply( x, estimateXfm );
+	 * 
+	 * // update error vector for( int i = 0; i < displacement.length; i++ ) {
+	 * errorV.set( i, y[ i ] - estimateXfm[ i ] ); }
+	 * 
+	 * // use the jacobian to estimate the descent direction CommonOps.solve(
+	 * jacobian, errorV, dir );
+	 * 
+	 * double norm = NormOps.normP2( dir ); CommonOps.divide( norm, dir );
+	 * 
+	 * // compute the directional derivative and magnitude CommonOps.mult(
+	 * jacobian, dir, directionalDeriv ); CommonOps.multTransA( dir,
+	 * directionalDeriv, descentDirectionMag );
+	 * 
+	 * for( int i = 0; i < displacement.length; i++ ) displacement[ i ] =
+	 * dir.get( i ); }
+	 */
 }
