@@ -65,6 +65,11 @@ public class WrappedIterativeInvertibleRealTransform< T extends RealTransform > 
 		return new InverseRealTransform( this );
 	}
 
+	public InverseRealTransformGradientDescent getOptimzer()
+	{
+		return inverseTransform;
+	}
+
 	@Override
 	public InvertibleRealTransform copy()
 	{

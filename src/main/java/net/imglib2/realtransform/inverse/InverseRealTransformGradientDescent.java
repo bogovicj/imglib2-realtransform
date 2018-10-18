@@ -5,6 +5,8 @@ import net.imglib2.RealPositionable;
 import net.imglib2.realtransform.AffineTransform;
 import net.imglib2.realtransform.RealTransform;
 
+import java.util.Arrays;
+
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
@@ -265,10 +267,6 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		
 		final double[] guessXfm = new double[ ndims ];
 
-//		System.out.println( " " );
-//		System.out.println( "trgt : " + Arrays.toString( target ));
-//		System.out.println( "gues : " + Arrays.toString( guess ));
-
 		xfm.apply( guess, guessXfm );
 
 		setTarget( target );
@@ -292,7 +290,8 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		
 			// TODO the above lines may be important
 			// if we want to regularize the jacobian
-			xfm.directionToward( errorV, estimate, dir );
+			//xfm.directionToward( errorV, estimate, dir );
+			xfm.directionToward( dir, guessXfm, target );
 
 			/* the two below lines should give identical results */
 //			t = backtrackingLineSearch( c, beta, stepSizeMaxTries, t0 );

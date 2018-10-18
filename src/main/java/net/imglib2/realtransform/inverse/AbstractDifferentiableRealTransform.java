@@ -52,12 +52,12 @@ public abstract class AbstractDifferentiableRealTransform implements Differentia
 			dir[ i ] /= norm;
 
 		// compute the directional derivative
-		double[] directionalDerivative = new double[ dir.length ];
-		jacobian.apply( dir, directionalDerivative );
+		//double[] directionalDerivative = new double[ dir.length ];
+		jacobian.apply( dir, displacement );
 
-		double descentDirectionMag = 0.0;
-		for ( int i = 0; i < dir.length; i++ )
-			descentDirectionMag += ( dir[ i ] * directionalDerivative[ i ] );
+//		double descentDirectionMag = 0.0;
+//		for ( int i = 0; i < displacement.length; i++ )
+//			descentDirectionMag += ( displacement[ i ] * directionalDerivative[ i ] );
 	}
 
 }
