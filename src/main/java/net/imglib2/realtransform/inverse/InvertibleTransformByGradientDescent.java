@@ -11,10 +11,12 @@ import net.imglib2.realtransform.InvertibleRealTransform;
  * @author John Bogovic
  *
  */
-public class InvertibleTransformByGradientDescent  implements InvertibleRealTransform
+public class InvertibleTransformByGradientDescent implements InvertibleRealTransform
 {
 	final boolean isInverse;
+
 	final DifferentiableRealTransform forwardTransform;
+
 	final BacktrackingLineSearch inverseTransform;
 
 	public InvertibleTransformByGradientDescent( final DifferentiableRealTransform forwardTransform )
@@ -27,9 +29,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 		this( forwardTransform, new BacktrackingLineSearch( forwardTransform ), isInverse );
 	}
 
-	public InvertibleTransformByGradientDescent( final DifferentiableRealTransform forwardTransform,
-			final BacktrackingLineSearch inverseTransform,
-			final boolean isInverse )
+	public InvertibleTransformByGradientDescent( final DifferentiableRealTransform forwardTransform, final BacktrackingLineSearch inverseTransform, final boolean isInverse )
 	{
 		this.forwardTransform = forwardTransform;
 		this.inverseTransform = inverseTransform;
@@ -40,7 +40,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 	@Override
 	public void apply( double[] p, double[] q )
 	{
-		if( isInverse )
+		if ( isInverse )
 			inverseTransform.iterativeInverse( p, q );
 		else
 			forwardTransform.apply( p, q );
@@ -49,7 +49,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 	@Override
 	public void apply( RealLocalizable p, RealPositionable q )
 	{
-		if( isInverse )
+		if ( isInverse )
 		{
 			double[] pd = new double[ p.numDimensions() ];
 			double[] qd = new double[ p.numDimensions() ];
@@ -65,7 +65,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 	@Override
 	public void applyInverse( double[] p, double[] q )
 	{
-		if( isInverse )
+		if ( isInverse )
 			forwardTransform.apply( p, q );
 		else
 			inverseTransform.iterativeInverse( p, q );
@@ -74,7 +74,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 	@Override
 	public void applyInverse( RealPositionable p, RealLocalizable q )
 	{
-		if( isInverse )
+		if ( isInverse )
 			forwardTransform.apply( q, p );
 		else
 		{
@@ -104,6 +104,7 @@ public class InvertibleTransformByGradientDescent  implements InvertibleRealTran
 	{
 		return forwardTransform.numSourceDimensions();
 	}
+
 	@Override
 	public int numTargetDimensions()
 	{

@@ -30,9 +30,9 @@ public abstract class AbstractDifferentiableRealTransform implements Differentia
 	 */
 	public void directionToward( final double[] displacement, final double[] x, final double[] y )
 	{
-		directionToward( jacobian(x), displacement, x, y );
+		directionToward( jacobian( x ), displacement, x, y );
 	}
-	
+
 	public static void directionToward( final AffineTransform jacobian, final double[] displacement, final double[] x, final double[] y )
 	{
 		double[] err = new double[ x.length ];
@@ -52,7 +52,7 @@ public abstract class AbstractDifferentiableRealTransform implements Differentia
 			dir[ i ] /= norm;
 
 		// compute the directional derivative
-		//double[] directionalDerivative = new double[ dir.length ];
+		// double[] directionalDerivative = new double[ dir.length ];
 		jacobian.apply( dir, displacement );
 
 //		double descentDirectionMag = 0.0;

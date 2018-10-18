@@ -3,10 +3,9 @@ package net.imglib2.realtransform.inverse;
 import net.imglib2.realtransform.AffineTransform;
 
 /**
- * Never use this. 
- * This thing's main use is to help test BacktrackingLineSearch
+ * Never use this. This thing's main use is to help test BacktrackingLineSearch
  * 
- * @author bogovicj
+ * @author John Bogovic
  *
  */
 public class IterativeAffineInverse extends AffineTransform implements DifferentiableRealTransform
@@ -15,7 +14,7 @@ public class IterativeAffineInverse extends AffineTransform implements Different
 	public IterativeAffineInverse( int n )
 	{
 		super( n );
-		
+
 	}
 
 	@Override
@@ -23,16 +22,17 @@ public class IterativeAffineInverse extends AffineTransform implements Different
 	{
 		// use displacement temporarily to store Ax
 		this.apply( x, displacement );
-		
+
 		// now displacement holds (Ax - y )
-		for( int i = 0; i < displacement.length; i++ )
+		for ( int i = 0; i < displacement.length; i++ )
 		{
 			displacement[ i ] -= y[ i ];
 		}
 	}
 
 	@Override
-	public AffineTransform jacobian(double[] x) {
+	public AffineTransform jacobian( double[] x )
+	{
 		// TODO Auto-generated method stub
 		return null;
 	}

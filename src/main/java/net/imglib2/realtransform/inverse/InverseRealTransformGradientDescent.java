@@ -17,7 +17,7 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	AffineTransform jacobian;
 
 	double[] directionalDeriv; // derivative in direction of dir (the
-										// descent direction )
+								// descent direction )
 
 	double descentDirectionMag; // computes dir^T directionalDeriv
 								// (where dir^T is often
@@ -40,30 +40,32 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	double stepSz = 1.0;
 
 	double beta = 0.7;
-	
+
 	double tolerance = 0.5;
-	
+
 	double c = 0.0001;
-	
+
 	int maxIters = 100;
-	
+
 	double jacobianEstimateStep = 1.0;
+
 	double jacobianRegularizationEps = 0.1;
-	
+
 	int stepSizeMaxTries = 8;
-	
+
 	double maxStepSize = Double.MAX_VALUE;
 
 	double minStepSize = 1e-9;
 
 	private DifferentiableRealTransform xfm;
-	
+
 	private double[] guess; // initialization for iterative inverse
-	private double[] src;   // source point (unmodified)
-	private double[] tgt;   // target point (unmodified)
-	
-	protected static Logger logger = LogManager.getLogger(
-			InverseRealTransformGradientDescent.class.getName() );
+
+	private double[] src; // source point (unmodified)
+
+	private double[] tgt; // target point (unmodified)
+
+	protected static Logger logger = LogManager.getLogger( InverseRealTransformGradientDescent.class.getName() );
 
 	public InverseRealTransformGradientDescent( int ndims, DifferentiableRealTransform xfm )
 	{
@@ -74,7 +76,7 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		directionalDeriv = new double[ ndims ];
 		descentDirectionMag = 0.0;
 		jacobian = new AffineTransform( ndims );
-		
+
 		src = new double[ ndims ];
 		tgt = new double[ ndims ];
 	}
@@ -93,7 +95,7 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	{
 		this.tolerance = tol;
 	}
-	
+
 	public void setMaxIters( final int maxIters )
 	{
 		this.maxIters = maxIters;
@@ -113,17 +115,17 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	{
 		this.minStepSize = minStep;
 	}
-	
+
 	public void setMaxStep( double maxStep )
 	{
 		this.maxStepSize = maxStep;
 	}
-	
+
 	public void setJacobianEstimateStep( final double jacStep )
 	{
 		this.jacobianEstimateStep = jacStep;
 	}
-	
+
 	public void setJacobianRegularizationEps( final double e )
 	{
 		this.jacobianRegularizationEps = e;
@@ -133,13 +135,13 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	{
 		this.stepSizeMaxTries = stepSizeMaxTries;
 	}
-	
+
 	public void setTarget( double[] tgt )
 	{
-		if( this.target == null )
+		if ( this.target == null )
 			this.target = new double[ ndims ];
 
-		System.arraycopy(tgt, 0, target, 0, ndims );
+		System.arraycopy( tgt, 0, target, 0, ndims );
 	}
 
 	public double[] getErrorVector()
@@ -154,19 +156,19 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	public void setEstimate( double[] est )
 	{
-		if( this.estimate == null )
+		if ( this.estimate == null )
 			this.estimate = new double[ ndims ];
 
-		System.arraycopy(est, 0, estimate, 0, ndims );
+		System.arraycopy( est, 0, estimate, 0, ndims );
 	}
 
 	public void setEstimateXfm( double[] est )
 	{
 
-		if( this.estimateXfm == null )
+		if ( this.estimateXfm == null )
 			this.estimateXfm = new double[ ndims ];
 
-		System.arraycopy(est, 0, estimateXfm, 0, ndims );
+		System.arraycopy( est, 0, estimateXfm, 0, ndims );
 		updateError();
 	}
 
@@ -194,36 +196,35 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	@Override
 	public RealTransform copy()
 	{
-		return new  InverseRealTransformGradientDescent( ndims, xfm );
+		return new InverseRealTransformGradientDescent( ndims, xfm );
 	}
-	
+
 	public void setGuess( final double[] guess )
 	{
 		this.guess = guess;
 	}
-	
+
 	public void apply( final double[] s, final double[] t )
 	{
-		
+
 		// needs to be able to work in place,
 		// so dont work with s and t directly
-        //
-        // copy s into src
+		//
+		// copy s into src
 		System.arraycopy( s, 0, src, 0, s.length );
 
-		
 		// initial guess is source
-		if( guess != null )
+		if ( guess != null )
 			System.arraycopy( guess, 0, tgt, 0, guess.length );
 		else
 			System.arraycopy( src, 0, tgt, 0, src.length );
 
 		// tgt is the error estimate
 		double err = inverseTol( src, tgt, tolerance, maxIters );
-		
-        // copy tgt into t
+
+		// copy tgt into t
 		System.arraycopy( tgt, 0, t, 0, t.length );
-		
+
 //		if( err > tolerance )
 //			System.out.println( "err: " + err + " >  EPS ( " + tolerance + " )" );
 	}
@@ -232,15 +233,15 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	{
 		double[] srcd = new double[ src.length ];
 		double[] tgtd = new double[ tgt.length ];
-		for( int i = 0; i < src.length; i++ )
+		for ( int i = 0; i < src.length; i++ )
 			srcd[ i ] = src[ i ];
 
 		apply( srcd, tgtd );
-		
-		for( int i = 0; i < tgt.length; i++ )
-			tgt[ i ] = (float)tgtd[ i ];
+
+		for ( int i = 0; i < tgt.length; i++ )
+			tgt[ i ] = ( float ) tgtd[ i ];
 	}
-	
+
 	public void apply( final RealLocalizable src, final RealPositionable tgt )
 	{
 		double[] srcd = new double[ src.numDimensions() ];
@@ -249,22 +250,21 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		apply( src, tgt );
 		tgt.setPosition( tgtd );
 	}
-	
+
 	public double inverseTol( final double[] target, final double[] guess, final double tolerance, final int maxIters )
 	{
 		// TODO - have a flag in the apply method to also return the derivative
 		// if requested
 		// to prevent duplicated effort
-		
+
 //		double error = 999 * tolerance;
 
-		/* 
-		 * initialize the error to a big enough number 
-		 * This shouldn't matter since the error is updated below
-		 * after the estimate updated.
+		/*
+		 * initialize the error to a big enough number This shouldn't matter
+		 * since the error is updated below after the estimate updated.
 		 */
-		error = 999 * tolerance; 
-		
+		error = 999 * tolerance;
+
 		final double[] guessXfm = new double[ ndims ];
 
 		xfm.apply( guess, guessXfm );
@@ -282,15 +282,14 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		{
 
 			/*
-			xfm.jacobian( estimate );
+			 * xfm.jacobian( estimate );
+			 * 
+			 * if( jacobianRegularizationEps > 0 ) regularizeJacobian();
+			 */
 
-			if( jacobianRegularizationEps > 0 )
-				regularizeJacobian();
-				*/
-		
 			// TODO the above lines may be important
 			// if we want to regularize the jacobian
-			//xfm.directionToward( errorV, estimate, dir );
+			// xfm.directionToward( errorV, estimate, dir );
 			xfm.directionToward( dir, guessXfm, target );
 
 			/* the two below lines should give identical results */
@@ -300,11 +299,11 @@ public class InverseRealTransformGradientDescent implements RealTransform
 			if ( t == 0.0 )
 				break;
 
-			updateEstimate( t );  // go in negative direction to reduce cost
+			updateEstimate( t ); // go in negative direction to reduce cost
 			updateError();
 
 			// TODO this line mmay be redundant
-			System.arraycopy( estimate, 0, guess, 0, guess.length);
+			System.arraycopy( estimate, 0, guess, 0, guess.length );
 
 			xfm.apply( guess, guessXfm );
 
@@ -312,7 +311,7 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 			setEstimateXfm( guessXfm );
 			error = getError();
-			
+
 			k++;
 		}
 
@@ -322,24 +321,27 @@ public class InverseRealTransformGradientDescent implements RealTransform
 	public void regularizeJacobian()
 	{
 		// Changes jacobian (J) to be:
-		// 	   ( 1-eps ) * J + ( eps ) * I 
-		// 
-		// note jacRegMatrix = eps * I 
-		for( int i = 0; i < ndims; i++ )
+		// ( 1-eps ) * J + ( eps ) * I
+		//
+		// note jacRegMatrix = eps * I
+		for ( int i = 0; i < ndims; i++ )
 		{
-			jacobian.set( 
-					jacobianRegularizationEps + jacobian.get( i, i ), 
-					i, i);
-		}	
+			jacobian.set( jacobianRegularizationEps + jacobian.get( i, i ), i, i );
+		}
 	}
 
 	/**
 	 * Uses Backtracking Line search to determine a step size.
 	 * 
-	 * @param c the armijoCondition parameter
-	 * @param beta the fraction to multiply the step size at each iteration ( less than 1 )
-	 * @param maxtries max number of tries
-	 * @param t0 initial step size
+	 * @param c
+	 *            the armijoCondition parameter
+	 * @param beta
+	 *            the fraction to multiply the step size at each iteration (
+	 *            less than 1 )
+	 * @param maxtries
+	 *            max number of tries
+	 * @param t0
+	 *            initial step size
 	 * @return the step size
 	 */
 	public double backtrackingLineSearch( double t0 )
@@ -360,25 +362,28 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 			k++;
 		}
-		
-		if( t < minStepSize )
-			return minStepSize;
-		
-		if( t > maxStepSize )
-			return maxStepSize;
 
-//		logger.trace( "selected step size after " + k + " tries" );
+		if ( t < minStepSize )
+			return minStepSize;
+
+		if ( t > maxStepSize )
+			return maxStepSize;
 
 		return t;
 	}
-	
+
 	/**
 	 * Uses Backtracking Line search to determine a step size.
 	 * 
-	 * @param c the armijoCondition parameter
-	 * @param beta the fraction to multiply the step size at each iteration ( less than 1 )
-	 * @param maxtries max number of tries
-	 * @param t0 initial step size
+	 * @param c
+	 *            the armijoCondition parameter
+	 * @param beta
+	 *            the fraction to multiply the step size at each iteration (
+	 *            less than 1 )
+	 * @param maxtries
+	 *            max number of tries
+	 * @param t0
+	 *            initial step size
 	 * @return the step size
 	 */
 	public double backtrackingLineSearch( double c, double beta, int maxtries, double t0 )
@@ -400,16 +405,16 @@ public class InverseRealTransformGradientDescent implements RealTransform
 			k++;
 		}
 
-//		logger.trace( "selected step size after " + k + " tries" );
-
 		return t;
 	}
 
 	/**
 	 * Returns true if the armijo condition is satisfied.
 	 * 
-	 * @param c the c parameter
-	 * @param t the step size
+	 * @param c
+	 *            the c parameter
+	 * @param t
+	 *            the step size
 	 * @return true if the step size satisfies the condition
 	 */
 	public boolean armijoCondition( double c, double t )
@@ -450,10 +455,10 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	public void updateEstimate( double stepSize )
 	{
-		for( int i = 0; i < ndims; i++ )
+		for ( int i = 0; i < ndims; i++ )
 			estimate[ i ] += stepSize * dir[ i ];
 	}
-	
+
 	public void updateError()
 	{
 		if ( estimate == null || target == null )
@@ -462,17 +467,17 @@ public class InverseRealTransformGradientDescent implements RealTransform
 			return;
 		}
 
-		// ( errorV = target - estimateXfm  )
-		for( int i = 0; i < ndims; i++ )
+		// ( errorV = target - estimateXfm )
+		for ( int i = 0; i < ndims; i++ )
 			errorV[ i ] = target[ i ] - estimateXfm[ i ];
-		
+
 		// set scalar error to magnitude of error gradient
 		error = 0.0;
 		for ( int i = 0; i < ndims; i++ )
 		{
 			error += errorV[ i ] * errorV[ i ];
 		}
-	
+
 		error = Math.sqrt( error );
 	}
 
