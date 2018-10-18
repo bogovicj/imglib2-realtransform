@@ -66,6 +66,7 @@ public class RealViews
 	 *            the {@link InvertibleRealTransform} transforming source
 	 *            coordinates to coordinates of the returned
 	 *            {@link RealRandomAccessible}
+	 * @param <T> the type
 	 *
 	 * @return {@link RealTransformRealRandomAccessible} representing the
 	 *         transformed source
@@ -93,6 +94,7 @@ public class RealViews
 	 *            the {@link InvertibleRealTransform} transforming source
 	 *            coordinates to coordinates of the returned
 	 *            {@link RealRandomAccessible}
+	 * @param <T> the type
 	 *
 	 * @return {@link RealTransformRandomAccessible} representing the
 	 *         transformed source
@@ -120,6 +122,7 @@ public class RealViews
 	 *            the {@link InvertibleRealTransform} transforming source
 	 *            coordinates to coordinates of the returned
 	 *            {@link RealRandomAccessible}
+	 * @param <T> the type
 	 *
 	 * @return {@link AffineRealRandomAccessible} representing the transformed
 	 *         source
@@ -148,6 +151,7 @@ public class RealViews
 	 *            the {@link InvertibleRealTransform} transforming source
 	 *            coordinates to coordinates of the returned
 	 *            {@link RealRandomAccessible}
+	 * @param <T> the type
 	 *
 	 * @return {@link AffineRandomAccessible} representing the transformed
 	 *         source
@@ -168,9 +172,53 @@ public class RealViews
 	 *
 	 * @param source
 	 *            the source
+	 * @param <T> the type
+	 * @return the new {@link RealRandomAccessible}
 	 */
 	public static < T > RealRandomAccessible< T > addDimension( final RealRandomAccessible< T > source )
 	{
 		return new StackingRealRandomAccessible< >( source, 1 );
+	}
+
+	/**
+	 * 
+	 * Simplifies all {@link RealTransform}s which are wrapped in the source
+	 * {@link RealRandomAccessible}.
+	 * 
+	 * NB: that the resulting {@link RandomAccessible} copies all
+	 * {@link RealTransform}s when required. Former references on any
+	 * {@link RealTransform}s wrapped in the {@link RealRandomAccessible} are
+	 * invalid for the resulting {@link RandomAccessible}.
+	 * 
+	 * @param source
+	 *            {@link RealRandomAccessible} to be simplified
+	 * @param <T> the type
+	 * @return potentially simplified {@link RandomAccessible}
+	 * 
+	 */
+	public static < T > RandomAccessible< T > simplify( final RealRandomAccessible< T > source )
+	{
+		return RealViewsSimplifyUtils.simplify( source );
+	}
+
+	/**
+	 * 
+	 * Simplifies all {@link RealTransform}s which are wrapped in the source
+	 * {@link RealRandomAccessible}.
+	 * 
+	 * NB: that the resulting {@link RealRandomAccessible} copies all
+	 * {@link RealTransform}s when required. Former references on any
+	 * {@link RealTransform}s wrapped in the {@link RealRandomAccessible} are
+	 * invalid for the resulting {@link RealRandomAccessible}.
+	 * 
+	 * @param source
+	 *            {@link RealRandomAccessible} to be simplified
+	 * @param <T> the type
+	 * @return potentially simplified {@link RealRandomAccessible}
+	 * 
+	 */
+	public static < T > RealRandomAccessible< T > simplifyReal( final RealRandomAccessible< T > source )
+	{
+		return RealViewsSimplifyUtils.simplifyReal( source );
 	}
 }

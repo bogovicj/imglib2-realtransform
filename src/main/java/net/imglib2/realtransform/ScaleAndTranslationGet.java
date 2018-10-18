@@ -45,33 +45,36 @@ public interface ScaleAndTranslationGet extends AffineGet
 	/**
 	 * Get a field of the <em>n</em>-dimensional scale vector.
 	 *
-	 * @param d
-	 * @return
+	 * @param d the dimension
+	 * @return element of the scale
 	 */
 	public double getScale( final int d );
 
 	/**
 	 * Get a copy of the <em>n</em>-dimensional scale vector.
 	 *
-	 * @return
+	 * @return copy of the scale vector
 	 */
 	public double[] getScaleCopy();
 
 	/**
 	 * Get a field of the <em>n</em>-dimensionsional translation vector.
 	 *
-	 * @param d
-	 * @return
+	 * @param d the dimension
+	 * @return element of the translation
 	 */
 	public double getTranslation( final int d );
 
 	/**
 	 * Get a copy of the <em>n</em>-dimensionsional translation vector.
 	 *
-	 * @return
+	 * @return copy of the translation vector
 	 */
 	public double[] getTranslationCopy();
 
 	@Override
 	ScaleAndTranslationGet inverse();
+
+	@Override
+	ScaleAndTranslationGet copy();
 }
