@@ -40,7 +40,8 @@ public abstract class AbstractDifferentiableRealTransform implements Differentia
 			err[ i ] = y[ i ] - x[ i ];
 
 		double[] dir = new double[ x.length ];
-		jacobian.inverse().apply( err, dir );
+		//jacobian.inverse().apply( err, dir );
+		matrixTranspose( jacobian ).apply( err, dir );
 
 		double norm = 0.0;
 		for ( int i = 0; i < dir.length; i++ )
@@ -51,13 +52,30 @@ public abstract class AbstractDifferentiableRealTransform implements Differentia
 		for ( int i = 0; i < dir.length; i++ )
 			dir[ i ] /= norm;
 
-		// compute the directional derivative
-		// double[] directionalDerivative = new double[ dir.length ];
-		jacobian.apply( dir, displacement );
+		System.arraycopy( dir, 0, displacement, 0, dir.length );
+
+		/* compute the directional derivative
+		  double[] directionalDerivative = new double[ dir.length ];
+		*/
+
+		//jacobian.apply( dir, displacement );
 
 //		double descentDirectionMag = 0.0;
 //		for ( int i = 0; i < displacement.length; i++ )
 //			descentDirectionMag += ( displacement[ i ] * directionalDerivative[ i ] );
+	}
+
+	public static AffineTransform matrixTranspose( final AffineTransform a )
+	{
+		int nd = a.numDimensions();
+		final AffineTransform aT = new AffineTransform( nd );
+		double[][] mtx = new double[ nd ][ nd + 1 ];
+		for ( int i = 0; i < nd; i++ )
+			for ( int j = 0; j < nd; j++ )
+				mtx[ j ][ i ] = a.get( i, j );
+
+		aT.set( mtx );
+		return aT;
 	}
 
 }

@@ -158,9 +158,20 @@ public class ThinplateSplineTransform extends AbstractDifferentiableRealTransfor
 
 	public AffineTransform jacobian( final double[] x )
 	{
-		double[][] j = tps.jacobian( x );
-		jacobian = new AffineTransform( j.length );
-		jacobian.set( j );
+		double[][] jac = tps.jacobian( x );
+		double[] jflat = new double[ x.length * ( x.length + 1 ) ];
+
+		int k = 0;
+		for( int i = 0; i< x.length; i++ )
+			for( int j = 0; j< (x.length +1); j++ )
+				if( j < x.length )
+					jflat[k++] = jac[i][j];
+				else
+					k++;
+
+		jacobian = new AffineTransform( x.length );
+		jacobian.set( jflat );
+
 		return jacobian;
 	}
 

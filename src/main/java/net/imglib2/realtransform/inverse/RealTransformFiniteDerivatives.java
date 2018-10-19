@@ -74,6 +74,8 @@ public class RealTransformFiniteDerivatives extends AbstractDifferentiableRealTr
 		double[] q = new double[ ndims ];
 		double[] qc = new double[ ndims ];
 
+		double[][] newjac = new double[ ndims ][ ndims+1 ];
+
 		transform.apply( x, qc );
 
 		for ( int i = 0; i < ndims; i++ )
@@ -87,8 +89,12 @@ public class RealTransformFiniteDerivatives extends AbstractDifferentiableRealTr
 			transform.apply( p, q );
 
 			for ( int j = 0; j < ndims; j++ )
-				jacobian.set( ( q[ j ] - qc[ j ] ) / step, j, i );
+			{
+				newjac[ j ][ i ] = ( q[ j ] - qc[ j ] ) / step;
+			}
 		}
+		jacobian.set( newjac );
+
 		return jacobian;
 	}
 	

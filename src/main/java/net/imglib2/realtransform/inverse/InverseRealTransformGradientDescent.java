@@ -51,7 +51,7 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	double jacobianRegularizationEps = 0.1;
 
-	int stepSizeMaxTries = 8;
+	int stepSizeMaxTries = 10;
 
 	double maxStepSize = Double.MAX_VALUE;
 
@@ -61,9 +61,9 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	private double[] guess; // initialization for iterative inverse
 
-	private double[] src; // source point (unmodified)
+	//private double[] src; // source point (unmodified)
 
-	private double[] tgt; // target point (unmodified)
+	//private double[] tgt; // target point (unmodified)
 
 	protected static Logger logger = LogManager.getLogger( InverseRealTransformGradientDescent.class.getName() );
 
@@ -77,8 +77,12 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		descentDirectionMag = 0.0;
 		jacobian = new AffineTransform( ndims );
 
-		src = new double[ ndims ];
-		tgt = new double[ ndims ];
+//		src = new double[ ndims ];
+//		tgt = new double[ ndims ];
+
+		target = new double[ ndims ];
+		estimate = new double[ ndims ];
+		estimateXfm = new double[ ndims ];
 	}
 
 	public void setBeta( double beta )
@@ -138,9 +142,6 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	public void setTarget( double[] tgt )
 	{
-		if ( this.target == null )
-			this.target = new double[ ndims ];
-
 		System.arraycopy( tgt, 0, target, 0, ndims );
 	}
 
@@ -156,20 +157,12 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	public void setEstimate( double[] est )
 	{
-		if ( this.estimate == null )
-			this.estimate = new double[ ndims ];
-
 		System.arraycopy( est, 0, estimate, 0, ndims );
 	}
 
 	public void setEstimateXfm( double[] est )
 	{
-
-		if ( this.estimateXfm == null )
-			this.estimateXfm = new double[ ndims ];
-
 		System.arraycopy( est, 0, estimateXfm, 0, ndims );
-		updateError();
 	}
 
 	public double[] getEstimate()
@@ -206,29 +199,17 @@ public class InverseRealTransformGradientDescent implements RealTransform
 
 	public void apply( final double[] s, final double[] t )
 	{
-
-		// needs to be able to work in place,
-		// so dont work with s and t directly
-		//
-		// copy s into src
-		System.arraycopy( s, 0, src, 0, s.length );
-
-		// initial guess is source
-		if ( guess != null )
-			System.arraycopy( guess, 0, tgt, 0, guess.length );
-		else
-			System.arraycopy( src, 0, tgt, 0, src.length );
-
 		// tgt is the error estimate
-		double err = inverseTol( src, tgt, tolerance, maxIters );
+		double err = inverseTol( s, s, tolerance, maxIters );
 
-		// copy tgt into t
-		System.arraycopy( tgt, 0, t, 0, t.length );
+		// copy estimate into t
+		System.arraycopy( estimate, 0, t, 0, t.length );
 
 //		if( err > tolerance )
 //			System.out.println( "err: " + err + " >  EPS ( " + tolerance + " )" );
 	}
 
+	@Deprecated
 	public void apply( final float[] src, final float[] tgt )
 	{
 		double[] srcd = new double[ src.length ];
@@ -257,7 +238,8 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		// if requested
 		// to prevent duplicated effort
 
-//		double error = 999 * tolerance;
+		// TODO should this be
+		this.target = target;
 
 		/*
 		 * initialize the error to a big enough number This shouldn't matter
@@ -265,22 +247,25 @@ public class InverseRealTransformGradientDescent implements RealTransform
 		 */
 		error = 999 * tolerance;
 
-		final double[] guessXfm = new double[ ndims ];
-
-		xfm.apply( guess, guessXfm );
-
-		setTarget( target );
 		setEstimate( guess );
-		setEstimateXfm( guessXfm ); // this calls update error
 
-//		System.out.println("pre-error    : " + error );
-		double t0 = getError();
+		//xfm.apply( guess, guessXfm );
+		xfm.apply( estimate, estimateXfm );
+
+		//setTarget( target );
+		//setEstimate( guess );
+		updateError();
+
+//		System.out.println( "target : " + Arrays.toString( target ));
+//		System.out.println( "estimate : " + Arrays.toString( estimate ));
+//		System.out.println( "estXfm   : " + Arrays.toString( estimateXfm ));
+
 		double t = 1.0;
-
 		int k = 0;
 		while ( error >= tolerance && k < maxIters )
 		{
 
+//			System.out.println( "k: " + k );
 			/*
 			 * xfm.jacobian( estimate );
 			 * 
@@ -290,27 +275,29 @@ public class InverseRealTransformGradientDescent implements RealTransform
 			// TODO the above lines may be important
 			// if we want to regularize the jacobian
 			// xfm.directionToward( errorV, estimate, dir );
-			xfm.directionToward( dir, guessXfm, target );
+			xfm.directionToward( dir, estimateXfm, target );
 
 			/* the two below lines should give identical results */
 //			t = backtrackingLineSearch( c, beta, stepSizeMaxTries, t0 );
-			t = backtrackingLineSearch( t0 );
+			t = backtrackingLineSearch( error );
+			
 
 			if ( t == 0.0 )
 				break;
 
 			updateEstimate( t ); // go in negative direction to reduce cost
+			xfm.apply( estimate, estimateXfm );
 			updateError();
 
-			// TODO this line mmay be redundant
-			System.arraycopy( estimate, 0, guess, 0, guess.length );
-
-			xfm.apply( guess, guessXfm );
-
-			t0 = getError();
-
-			setEstimateXfm( guessXfm );
 			error = getError();
+
+//			System.out.println( "t: " + t );
+//			System.out.println( "dir      : " + Arrays.toString( dir ));
+//			System.out.println( "errV      : " + Arrays.toString( errorV ));
+//			System.out.println( "estimate : " + Arrays.toString( estimate ));
+//			System.out.println( "estXfm   : " + Arrays.toString( estimateXfm ));
+//			System.out.println( "error      : " + error );
+//			System.out.println( " " );
 
 			k++;
 		}

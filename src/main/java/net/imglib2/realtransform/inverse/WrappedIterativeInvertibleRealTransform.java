@@ -10,12 +10,26 @@ public class WrappedIterativeInvertibleRealTransform< T extends RealTransform > 
 {
 	protected final T forwardTransform;
 
+	protected final DifferentiableRealTransform differentiableTrasnform;
+
 	protected final InverseRealTransformGradientDescent inverseTransform;
 
 	public WrappedIterativeInvertibleRealTransform( final T xfm )
 	{
 		this.forwardTransform = xfm;
-		inverseTransform = new InverseRealTransformGradientDescent( xfm.numSourceDimensions(), new RealTransformFiniteDerivatives( xfm ) );
+
+		if( xfm instanceof DifferentiableRealTransform )
+		{
+			System.out.println( "wiirt: already diff");
+			differentiableTrasnform = (DifferentiableRealTransform) xfm;
+		}
+		else
+		{
+			System.out.println( "wiirt: computed diff");
+			differentiableTrasnform = new RealTransformFiniteDerivatives( xfm );
+		}
+
+		inverseTransform = new InverseRealTransformGradientDescent( xfm.numSourceDimensions(), differentiableTrasnform );
 	}
 
 	public T getTransform()
