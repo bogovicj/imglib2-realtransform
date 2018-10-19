@@ -10,31 +10,31 @@ import net.imglib2.realtransform.AffineTransform;
  */
 public class IterativeAffineInverse extends AffineTransform implements DifferentiableRealTransform
 {
+	final AffineTransform jacobian;
 
+	// TODO move this class into tests
 	public IterativeAffineInverse( int n )
 	{
 		super( n );
-
+		jacobian = new AffineTransform( n );
 	}
 
 	@Override
 	public void directionToward( double[] displacement, double[] x, double[] y )
 	{
-		// use displacement temporarily to store Ax
-		this.apply( x, displacement );
-
-		// now displacement holds (Ax - y )
-		for ( int i = 0; i < displacement.length; i++ )
-		{
-			displacement[ i ] -= y[ i ];
-		}
+		RealTransformFiniteDerivatives.directionToward( jacobian(x), displacement, x, y );
 	}
 
 	@Override
 	public AffineTransform jacobian( double[] x )
 	{
-		// TODO Auto-generated method stub
-		return null;
+		jacobian.set( this.getRowPackedCopy() );
+		for( int d = 0; d < n; d++ )
+			jacobian.set( 0.0, d, n );
+
+		//System.out.println( "jac      : " + Arrays.toString( jacobian.getRowPackedCopy() ));
+
+		return jacobian;
 	}
 
 }
