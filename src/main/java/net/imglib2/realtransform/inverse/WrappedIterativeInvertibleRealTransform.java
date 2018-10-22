@@ -20,12 +20,10 @@ public class WrappedIterativeInvertibleRealTransform< T extends RealTransform > 
 
 		if( xfm instanceof DifferentiableRealTransform )
 		{
-			System.out.println( "wiirt: already diff");
 			differentiableTrasnform = (DifferentiableRealTransform) xfm;
 		}
 		else
 		{
-			System.out.println( "wiirt: computed diff");
 			differentiableTrasnform = new RealTransformFiniteDerivatives( xfm );
 		}
 

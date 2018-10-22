@@ -15,8 +15,11 @@ public class IterableInverseTests
 	public final double EPS = 0.0001;
 
 	@Test
-	public void testTpsInverse()
+	public void testTpsInverseSimple()
 	{
+		/*
+		 * Simple TPS
+		 */
 		double[][] srcPts = new double[][]{
 				{ -1.0, 0.0, 1.0, 0.0 }, // x
 				{ 0.0, -1.0, 0.0, 1.0 } }; // y
@@ -41,13 +44,84 @@ public class IterableInverseTests
 		tpsInv.applyInverse( yest, y );
 		tps.apply( yest, yestinv );
 		
-//		System.out.println( "x      : " + Arrays.toString( x ));
-//		System.out.println( "y      : " + Arrays.toString( y ));
-//		System.out.println( "yest   : " + Arrays.toString( yest ));
-//		System.out.println( "yesti  : " + Arrays.toString( yestinv ));
-
-		Assert.assertTrue( true );
 		Assert.assertArrayEquals("tps", x, yest, EPS );
+	}
+
+	@Test
+	public void testTpsInverse()
+	{
+		/*
+		 * Warp
+		 */
+		final double[][] src_simple = new double[][]
+		{
+				{ 0, 0, 0, 1, 1, 1, 2, 2, 2 }, // x
+				{ 0, 1, 2, 0, 1, 2, 0, 1, 2 }, // y
+		};
+		// target points
+		final double[][] tgt = new double[][]
+		{
+				{ -0.5, -0.5, -0.5, 1.5, 1.5, 1.5, 2.0, 2.0, 2.0 }, // x
+				{ -0.5, 1.5, 2.0, -0.5, 1.5, 2.0, -0.5, 1.5, 2.0 } // y
+		};
+
+		final ThinplateSplineTransform tps = new ThinplateSplineTransform( src_simple, tgt );
+		WrappedIterativeInvertibleRealTransform<ThinplateSplineTransform> tpsInv = new WrappedIterativeInvertibleRealTransform<>( tps );
+		tpsInv.getOptimzer().setTolerance( EPS / 2 );
+
+		/* **** PT 1 **** */
+		double[] x = new double[]{ 0.0f, 0.0f };
+		double[] y = new double[ 2 ];
+		double[] yi = new double[ 2 ];
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 1", x, yi, EPS );
+
+
+		/* **** PT 2 **** */
+		x[ 0 ] = 0.5;
+		x[ 1 ] = 0.5;
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 2", x, yi, EPS );
+
+
+		/* **** PT 3 **** */
+		x[ 0 ] = 1;
+		x[ 1 ] = 1;
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 3", x, yi, EPS );
+
+
+		/* **** RANDOM PT SMALL **** */
+		x[ 0 ] = 0.6198672937136046;
+		x[ 1 ] = 0.3758563293461874;
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 4", x, yi, EPS );
+
+
+		/* **** RANDOM PT NEG **** */
+		x[ 0 ] = -0.24032;
+		x[ 1 ] = -0.65288;
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 5", x, yi, EPS );
+
+
+		/* **** RANDOM PT BIG **** */
+		x[ 0 ] = 4.983245;
+		x[ 1 ] = 3.124307;
+
+		tps.apply( x, y );
+		tpsInv.applyInverse( yi, y );
+		Assert.assertArrayEquals("tps warp inv 5", x, yi, EPS );
 	}
 
 	@Test
@@ -64,8 +138,6 @@ public class IterableInverseTests
 		I3.applyInverse( q, p );
 		Assert.assertArrayEquals( "identity matrix inverse", pxfm, q, EPS );
 
-		System.out.println( "q : " + Arrays.toString( q ));
-		
 		IterativeAffineInverse rot = new IterativeAffineInverse( 3 );
 
 		rot.set( 0.0, 1.0, 0.0, 0.1,
@@ -82,10 +154,8 @@ public class IterableInverseTests
 		rot.apply( p, pxfm );
 		rotinverter.apply( pxfm, q );
 
-
 		Assert.assertArrayEquals( "rotation matrix inverse", p, q, EPS );
 	}
-	
 	
 	private class IterativeAffineInverse extends AffineTransform implements DifferentiableRealTransform
 	{
@@ -110,8 +180,6 @@ public class IterableInverseTests
 			jacobian.set( this.getRowPackedCopy() );
 			for( int d = 0; d < n; d++ )
 				jacobian.set( 0.0, d, n );
-
-			//System.out.println( "jac      : " + Arrays.toString( jacobian.getRowPackedCopy() ));
 
 			return jacobian;
 		}
