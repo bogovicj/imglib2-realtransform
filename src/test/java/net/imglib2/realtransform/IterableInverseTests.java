@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
 
+import net.imglib2.RealPoint;
 import net.imglib2.realtransform.inverse.DifferentiableRealTransform;
 import net.imglib2.realtransform.inverse.InverseRealTransformGradientDescent;
 import net.imglib2.realtransform.inverse.RealTransformFiniteDerivatives;
@@ -46,6 +47,23 @@ public class IterableInverseTests
 		
 		Assert.assertArrayEquals("tps", x, yest, EPS );
 	}
+	
+	public static boolean almostEqual( RealPoint p, RealPoint q, double eps )
+	{
+		assert p.numDimensions() == q.numDimensions();
+		
+		for( int i = 0; i< p.numDimensions(); i++ )
+		{
+			if( Math.abs( p.getDoublePosition( i ) - q.getDoublePosition( i )) > eps )
+			{
+				System.err.println( "p: "  + p );
+				System.err.println( "q: "  + q );
+				return false;
+			}
+		}
+
+		return true;
+	}
 
 	@Test
 	public void testTpsInverse()
@@ -73,10 +91,20 @@ public class IterableInverseTests
 		double[] x = new double[]{ 0.0f, 0.0f };
 		double[] y = new double[ 2 ];
 		double[] yi = new double[ 2 ];
+		
+		RealPoint xp = new RealPoint( 2 );
+		RealPoint yp = new RealPoint( 2 );
+		RealPoint yip = new RealPoint( 2 );
 
 		tps.apply( x, y );
 		tpsInv.applyInverse( yi, y );
 		Assert.assertArrayEquals("tps warp inv 1", x, yi, EPS );
+		
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 1 pts", almostEqual( xp, yip, EPS ));
+
 
 
 		/* **** PT 2 **** */
@@ -87,6 +115,11 @@ public class IterableInverseTests
 		tpsInv.applyInverse( yi, y );
 		Assert.assertArrayEquals("tps warp inv 2", x, yi, EPS );
 
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 2 pts", almostEqual( xp, yip, EPS ));
+
 
 		/* **** PT 3 **** */
 		x[ 0 ] = 1;
@@ -95,6 +128,11 @@ public class IterableInverseTests
 		tps.apply( x, y );
 		tpsInv.applyInverse( yi, y );
 		Assert.assertArrayEquals("tps warp inv 3", x, yi, EPS );
+
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 3 pts", almostEqual( xp, yip, EPS ));
 
 
 		/* **** RANDOM PT SMALL **** */
@@ -105,6 +143,11 @@ public class IterableInverseTests
 		tpsInv.applyInverse( yi, y );
 		Assert.assertArrayEquals("tps warp inv 4", x, yi, EPS );
 
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 4 pts", almostEqual( xp, yip, EPS ));
+
 
 		/* **** RANDOM PT NEG **** */
 		x[ 0 ] = -0.24032;
@@ -114,6 +157,10 @@ public class IterableInverseTests
 		tpsInv.applyInverse( yi, y );
 		Assert.assertArrayEquals("tps warp inv 5", x, yi, EPS );
 
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 5 pts", almostEqual( xp, yip, EPS ));
 
 		/* **** RANDOM PT BIG **** */
 		x[ 0 ] = 4.983245;
@@ -121,7 +168,12 @@ public class IterableInverseTests
 
 		tps.apply( x, y );
 		tpsInv.applyInverse( yi, y );
-		Assert.assertArrayEquals("tps warp inv 5", x, yi, EPS );
+		Assert.assertArrayEquals("tps warp inv 6", x, yi, EPS );
+
+		xp.setPosition( x );
+		tpsInv.apply( xp, yp );
+		tpsInv.applyInverse( yip, yp );
+		Assert.assertTrue( "tps warp inv 6 pts", almostEqual( xp, yip, EPS ));
 	}
 
 	@Test
