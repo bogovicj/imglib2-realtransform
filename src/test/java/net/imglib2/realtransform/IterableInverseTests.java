@@ -50,17 +50,17 @@ public class IterableInverseTests
 		
 		Assert.assertArrayEquals("tps", x, yest, EPS );
 	}
-	
+
 	public static boolean almostEqual( RealPoint p, RealPoint q, double eps )
 	{
 		assert p.numDimensions() == q.numDimensions();
-		
-		for( int i = 0; i< p.numDimensions(); i++ )
+
+		for ( int i = 0; i < p.numDimensions(); i++ )
 		{
-			if( Math.abs( p.getDoublePosition( i ) - q.getDoublePosition( i )) > eps )
+			if ( Math.abs( p.getDoublePosition( i ) - q.getDoublePosition( i ) ) > eps )
 			{
-				//System.err.println( "p: "  + p );
-				//System.err.println( "q: "  + q );
+				// System.err.println( "p: " + p );
+				// System.err.println( "q: " + q );
 				return false;
 			}
 		}
