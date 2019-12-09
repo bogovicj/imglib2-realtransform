@@ -74,6 +74,12 @@ public class InvertibleRealTransformSequence extends AbstractRealTransformSequen
 	}
 
 	@Override
+	protected void unpack( final AbstractRealTransformSequence< InvertibleRealTransform > sequence )
+	{
+		transforms.addAll( sequence.transforms );
+	}
+
+	@Override
 	public void applyInverse( final float[] source, final float[] target )
 	{
 		assert source.length >= nSource && target.length >= nTarget: "Input dimensions too small.";

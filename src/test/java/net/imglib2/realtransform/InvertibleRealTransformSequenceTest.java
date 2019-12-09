@@ -37,6 +37,7 @@ package net.imglib2.realtransform;
 import java.util.Random;
 
 import net.imglib2.RealPoint;
+import net.imglib2.util.Util;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -44,7 +45,7 @@ import org.junit.Test;
 
 public class InvertibleRealTransformSequenceTest
 {
-	static private AffineTransform3D a1, a2, a3, a123;
+	static private AffineTransform3D a1, a2, a3, a123, a1inv, a2inv, a3inv;
 
 	static private double[] x = new double[ 3 ];
 
@@ -63,9 +64,9 @@ public class InvertibleRealTransformSequenceTest
 
 	final static void add( final InvertibleRealTransformSequence l )
 	{
-		l.add( a1 );
-		l.add( a2 );
-		l.add( a3 );
+		l.add( a1.copy() );
+		l.add( a2.copy() );
+		l.add( a3.copy() );
 	}
 
 	@BeforeClass
@@ -92,6 +93,10 @@ public class InvertibleRealTransformSequenceTest
 		a123.preConcatenate( a1 );
 		a123.preConcatenate( a2 );
 		a123.preConcatenate( a3 );
+
+		a1inv = a1.inverse();
+		a2inv = a2.inverse();
+		a3inv = a3.inverse();
 
 		x[ 0 ] = r();
 		x[ 1 ] = r();
@@ -234,6 +239,47 @@ public class InvertibleRealTransformSequenceTest
 		// must behave as identity
 		l.applyInverse( x2, y );
 		Assert.assertArrayEquals( x2, y, 0.001 );
+	}
+
+	@Test
+	public void testSimplify()
+	{
+		final InvertibleRealTransformSequence l = new InvertibleRealTransformSequence();
+		add( l );
+
+		Assert.assertTrue( "sequence should be lengthOne", l.transforms.size() == 1 );
+	}
+
+	@Test
+	public void testUnpack()
+	{
+		final InvertibleRealTransformSequence l = new InvertibleRealTransformSequence();
+		add( l );
+		InvertibleRealTransformSequence lorig = l.copy();
+
+		// add the list to itself
+		// should behave just like applying l twice
+		l.add( l ); 
+
+		final double[] y1orig = new double[ 3 ];
+		final RealPoint py1orig = RealPoint.wrap( y1orig );
+
+		final double[] tmp = new double[ 3 ];
+		final RealPoint ptmp = RealPoint.wrap( tmp );
+
+		final double[] y1 = new double[ 3 ];
+		final RealPoint py1 = RealPoint.wrap( y1 );
+
+		// apply lorig twice
+		lorig.apply( px, ptmp );
+		lorig.apply( ptmp, py1orig );
+
+		// apply l once
+		l.apply( px, py1 );
+
+		Assert.assertArrayEquals( y1orig, y1, 0.001 );
+		Assert.assertTrue( "check that unpackig really happened",
+				( l.transforms.size() == 2 * lorig.transforms.size()) );
 	}
 
 	@Test

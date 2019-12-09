@@ -51,6 +51,8 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.ConstantUtils;
+import net.imglib2.view.IntervalView;
 import net.imglib2.view.Views;
 
 /**
@@ -120,6 +122,12 @@ public class RealViewsSimplificationsTest
 			0.0, 0.0, 3.0, 0.0, 0.0,
 			0.0, 0.0, 0.0, 1.0, 0.0,
 	}, 4 );
+
+	private static final RealTransform SCALE3D_RT = SCALE3D;
+
+	private static final RealTransform SCALEANTTRANSLATION3D_RT = SCALE3D;
+
+	private static final RealTransform DFIELD3D = createDfield( 3 );
 
 	@Before
 	public void init()
@@ -278,6 +286,13 @@ public class RealViewsSimplificationsTest
 		Assert.assertTrue( RealViewsSimplifyUtils.simplifyRealTransform( SCALEANDTRANSLATION4D ) instanceof ScaleAndTranslation );
 	}
 
+	@Test
+	public void testAffineSimplification()
+	{
+		Assert.assertTrue( RealViewsSimplifyUtils.tryPreConcatenateToSecond( SCALE3D_RT, SCALEANTTRANSLATION3D_RT ));
+		Assert.assertFalse( RealViewsSimplifyUtils.tryPreConcatenateToSecond( DFIELD3D, SCALEANTTRANSLATION3D_RT ));
+	}
+
 	private static AffineGet create( double[] input, int numDims )
 	{
 		if ( numDims == 2 )
@@ -298,6 +313,16 @@ public class RealViewsSimplificationsTest
 			affine.set( input );
 			return affine;
 		}
+	}
+
+	private static RealTransform createDfield( final int nd )
+	{
+		// a deformation field representing an nd transform
+		IntervalView<FloatType> defRai = Views.interval(
+				ConstantUtils.constantRandomAccessible( new FloatType( 0.0f ), nd + 1 ),
+				new FinalInterval( 10, 10, 10, nd ) );
+
+		return new DeformationFieldTransform< >( defRai );
 	}
 
 	@SuppressWarnings( { "rawtypes", "unchecked" } )

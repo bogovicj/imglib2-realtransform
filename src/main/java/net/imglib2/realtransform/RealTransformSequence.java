@@ -43,6 +43,12 @@ package net.imglib2.realtransform;
 public class RealTransformSequence extends AbstractRealTransformSequence< RealTransform >
 {
 	@Override
+	protected void unpack( final AbstractRealTransformSequence< RealTransform > sequence )
+	{
+		transforms.addAll( sequence.transforms );
+	}
+
+	@Override
 	public RealTransformSequence copy()
 	{
 		final RealTransformSequence copy = new RealTransformSequence();

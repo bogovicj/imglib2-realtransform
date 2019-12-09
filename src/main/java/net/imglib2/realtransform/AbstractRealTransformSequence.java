@@ -48,7 +48,7 @@ import net.imglib2.RealPositionable;
  * @author Stephan Saalfeld
  * @author John Bogovic
  */
-public class AbstractRealTransformSequence< R extends RealTransform > implements RealTransform
+public abstract class AbstractRealTransformSequence< R extends RealTransform > implements RealTransform
 {
 	final protected ArrayList< R > transforms = new ArrayList<>();
 
@@ -65,9 +65,33 @@ public class AbstractRealTransformSequence< R extends RealTransform > implements
 	 *
 	 * @param transform the RealTransform
 	 */
+	@SuppressWarnings("unchecked")
 	public void add( final R transform )
 	{
-		transforms.add( transform );
+		if( transform.isIdentity() )
+			return;
+
+		// TODO simplify input here?
+		boolean needToAdd = true;
+		if( transform instanceof AbstractRealTransformSequence<?> )
+		{
+			unpack( (AbstractRealTransformSequence<R>) transform );
+			needToAdd = false;
+		}
+		else if( transforms.size() > 0 )
+		{
+			 needToAdd = !RealViewsSimplifyUtils.tryPreConcatenateToSecond( 
+					 transform, transforms.get( transforms.size() - 1 ));
+
+			 // TODO simplify result here
+//			 if( !needToAdd )
+//			 {
+//				 System.out.println( "sucessully simplified" );
+//			 }
+		}
+
+		if( needToAdd )
+			transforms.add( transform );
 
 		if ( transforms.size() == 1 )
 		{
@@ -183,13 +207,7 @@ public class AbstractRealTransformSequence< R extends RealTransform > implements
 		}
 	}
 
-	@SuppressWarnings( "unchecked" )
-	@Override
-	public AbstractRealTransformSequence< R > copy()
-	{
-		final AbstractRealTransformSequence< R > copy = new AbstractRealTransformSequence<>();
-		for ( final R t : transforms )
-			copy.add( ( R ) t.copy() );
-		return copy;
-	}
+	public abstract AbstractRealTransformSequence< R > copy();
+
+	protected abstract void unpack( final AbstractRealTransformSequence< R > sequence );
 }

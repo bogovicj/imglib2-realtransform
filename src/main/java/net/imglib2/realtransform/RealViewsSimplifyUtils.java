@@ -42,6 +42,7 @@ import java.util.List;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.concatenate.ConcatenateUtils;
+import net.imglib2.concatenate.PreConcatenable;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.RandomAccessibleOnRealRandomAccessible;
@@ -195,6 +196,29 @@ public class RealViewsSimplifyUtils
 
 		if ( transform instanceof AffineGet ) { return simplifyAffineGet( ( AffineGet ) tmp ); }
 		return tmp;
+	}
+
+	/**
+	 * Modifies second by pre-concatenating first to it, if possible.
+	 * Returns true if successful. 
+	 * 
+	 * @param first the second transform
+	 * @param second the second transform
+	 * @return true if successfully pre-concatenated
+	 */
+	@SuppressWarnings("unchecked")
+	public static <A extends RealTransform,B extends RealTransform> boolean tryPreConcatenateToSecond( final A first, final B second )
+	{
+		if( second instanceof PreConcatenable<?> )
+		{
+			Class<?> clazz = ((PreConcatenable<?>) second).getPreConcatenableClass();
+			if( clazz.isInstance( first ))
+			{
+				((PreConcatenable<A>)second).preConcatenate( first );
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/*
