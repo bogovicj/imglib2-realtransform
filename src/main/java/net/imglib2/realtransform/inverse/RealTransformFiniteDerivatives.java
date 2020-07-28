@@ -56,7 +56,7 @@ public class RealTransformFiniteDerivatives extends AbstractDifferentiableRealTr
 
 	public RealTransformFiniteDerivatives copy()
 	{
-		return new RealTransformFiniteDerivatives( transform );
+		return new RealTransformFiniteDerivatives( transform.copy() );
 	}
 
 	/**
