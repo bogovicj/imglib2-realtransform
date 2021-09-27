@@ -38,6 +38,7 @@ package net.imglib2.realtransform;
  * A sequence of {@link RealTransform RealTransforms}. If empty, will behave as the identity transformation.
  * 
  * @author Stephan Saalfeld
+ * @author John Bogovic
  */
 public class RealTransformSequence extends AbstractRealTransformSequence< RealTransform >
 {
@@ -48,5 +49,11 @@ public class RealTransformSequence extends AbstractRealTransformSequence< RealTr
 		for ( final RealTransform t : transforms )
 			copy.add( t.copy() );
 		return copy;
+	}
+
+	@Override
+	protected void unpack( final AbstractRealTransformSequence< RealTransform > sequence )
+	{
+		transforms.addAll( sequence.transforms );
 	}
 }

@@ -42,6 +42,7 @@ import java.util.List;
 import net.imglib2.RandomAccessible;
 import net.imglib2.RealRandomAccessible;
 import net.imglib2.concatenate.ConcatenateUtils;
+import net.imglib2.concatenate.PreConcatenable;
 import net.imglib2.util.Pair;
 import net.imglib2.util.ValuePair;
 import net.imglib2.view.RandomAccessibleOnRealRandomAccessible;
@@ -354,6 +355,29 @@ public class RealViewsSimplifyUtils
 
 			ConcatenateUtils.join( transforms );
 		}
+	}
+
+	/**
+	 * Modifies first by pre-concatenating first to it, if possible.
+	 * Returns true if successful.
+	 *
+	 * @param first the first transform
+	 * @param second the second transform
+	 * @return true if successfully pre-concatenated
+	 */
+	@SuppressWarnings("unchecked")
+	public static <A extends RealTransform,B extends RealTransform> boolean tryPreConcatenate( final A first, final B second )
+	{
+		if( first instanceof PreConcatenable<?> )
+		{
+			Class<?> clazz = ((PreConcatenable<?>) first).getPreConcatenableClass();
+			if( clazz.isInstance( second ))
+			{
+				((PreConcatenable<B>)first).preConcatenate( second );
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

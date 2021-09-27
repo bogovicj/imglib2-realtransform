@@ -43,6 +43,7 @@ import net.imglib2.RealPositionable;
  * If empty, will behave as the identity transformation.
  * 
  * @author Stephan Saalfeld
+ * @author John Bogovic
  */
 public class InvertibleRealTransformSequence extends AbstractRealTransformSequence< InvertibleRealTransform > implements InvertibleRealTransform
 {
@@ -134,5 +135,11 @@ public class InvertibleRealTransformSequence extends AbstractRealTransformSequen
 		for ( final InvertibleRealTransform t : transforms )
 			copy.add( t.copy() );
 		return copy;
+	}
+
+	@Override
+	protected void unpack( final AbstractRealTransformSequence< InvertibleRealTransform > sequence )
+	{
+		transforms.addAll( sequence.transforms );
 	}
 }

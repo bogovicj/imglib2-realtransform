@@ -51,10 +51,12 @@ import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.basictypeaccess.array.FloatArray;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.type.numeric.real.FloatType;
+import net.imglib2.util.ConstantUtils;
 import net.imglib2.view.Views;
 
 /**
  * @author Christian Dietz, University of Konstanz
+ * @author John Bogovic
  *
  */
 public class RealViewsSimplificationsTest
@@ -120,6 +122,8 @@ public class RealViewsSimplificationsTest
 			0.0, 0.0, 3.0, 0.0, 0.0,
 			0.0, 0.0, 0.0, 1.0, 0.0,
 	}, 4 );
+
+	private static final RealTransform DFIELD3D = createDfield3d();
 
 	@Before
 	public void init()
@@ -278,6 +282,51 @@ public class RealViewsSimplificationsTest
 		Assert.assertTrue( RealViewsSimplifyUtils.simplifyRealTransform( SCALEANDTRANSLATION4D ) instanceof ScaleAndTranslation );
 	}
 
+	@Test
+	public void testAffineSimplification()
+	{
+		AffineTransform3D s = (AffineTransform3D)SCALE3D.copy();
+		AffineTransform3D s2 = s.preConcatenate(s);
+
+		Assert.assertTrue( RealViewsSimplifyUtils.tryPreConcatenate( s, s ));
+
+		// check that s was modified
+		double[] x = new double[] { 1, 1, 1 };
+		double[] y1 = new double[3];
+		double[] y2 = new double[3];
+		s2.apply( x, y2 );
+		s.apply( x, y1 );
+		Assert.assertArrayEquals(y2, y1, 0.0001 );
+
+		Assert.assertFalse( RealViewsSimplifyUtils.tryPreConcatenate( DFIELD3D, SCALE3D ));
+	}
+
+	@Test
+	public void testSequenceSimplification()
+	{
+		// use copies below since the simplify method may modify the objects
+		final InvertibleRealTransformSequence l = new InvertibleRealTransformSequence();	
+		l.add(SCALE3D.copy());
+		l.add(SCALEANDTRANSLATION3D.copy());
+		l.add(TRANSLATION3D.copy());
+		l.simplify();
+
+		// check that the three transforms were merged
+		Assert.assertEquals( "transform simplify", 1, l.transforms.size() );
+
+		AffineTransform3D xfm = new AffineTransform3D();
+		xfm.concatenate( SCALE3D.copy() );
+		xfm.preConcatenate( SCALEANDTRANSLATION3D.copy() );
+		xfm.preConcatenate( TRANSLATION3D.copy() );
+
+		double[] x = new double[] { 1, 1, 1 };
+		double[] y1 = new double[3];
+		double[] y2 = new double[3];
+		l.apply( x, y2 );
+		l.apply( x, y1 );
+		Assert.assertArrayEquals(y2, y1, 0.0001 );
+	}
+
 	private static AffineGet create( double[] input, int numDims )
 	{
 		if ( numDims == 2 )
@@ -298,6 +347,13 @@ public class RealViewsSimplificationsTest
 			affine.set( input );
 			return affine;
 		}
+	}
+
+	private static RealTransform createDfield3d()
+	{
+		final RealRandomAccessible<FloatType> v = ConstantUtils.constantRealRandomAccessible(
+				new FloatType(0.0f), 3);
+		return new DeformationFieldTransform< >( v, v, v );
 	}
 
 	@SuppressWarnings( { "rawtypes", "unchecked" } )

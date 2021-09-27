@@ -35,6 +35,7 @@
 package net.imglib2.realtransform;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import net.imglib2.RealLocalizable;
 import net.imglib2.RealPoint;
@@ -46,8 +47,9 @@ import net.imglib2.RealPositionable;
  * {@link RealTransform RealTransforms}. If empty, will behave as the identity transformation.
  * 
  * @author Stephan Saalfeld
+ * @author John Bogovic
  */
-public class AbstractRealTransformSequence< R extends RealTransform > implements RealTransform
+public abstract class AbstractRealTransformSequence< R extends RealTransform > implements RealTransform
 {
 	final protected ArrayList< R > transforms = new ArrayList<>();
 
@@ -64,9 +66,21 @@ public class AbstractRealTransformSequence< R extends RealTransform > implements
 	 *
 	 * @param transform the RealTransform
 	 */
+	@SuppressWarnings("unchecked")
 	public void add( final R transform )
 	{
-		transforms.add( transform );
+		if( transform.isIdentity() )
+			return;
+
+		boolean needToAdd = true;
+		if( transform instanceof AbstractRealTransformSequence<?> )
+		{
+			unpack( (AbstractRealTransformSequence<R>) transform );
+			needToAdd = false;
+		}
+
+		if( needToAdd )
+			transforms.add( transform );
 
 		if ( transforms.size() == 1 )
 		{
@@ -204,13 +218,36 @@ public class AbstractRealTransformSequence< R extends RealTransform > implements
 		}
 	}
 
-	@SuppressWarnings( "unchecked" )
 	@Override
-	public AbstractRealTransformSequence< R > copy()
+	public abstract AbstractRealTransformSequence< R > copy();
+
+	protected abstract void unpack( final AbstractRealTransformSequence< R > sequence );
+
+
+	// TODO doc
+	public boolean simplify()
 	{
-		final AbstractRealTransformSequence< R > copy = new AbstractRealTransformSequence<>();
-		for ( final R t : transforms )
-			copy.add( ( R ) t.copy() );
-		return copy;
+		if( transforms.size() <= 1 )
+			return false;
+
+		final LinkedList<Integer> indexesToRemove = new LinkedList<>();
+		boolean didSimplify = false;
+		RealTransform base = transforms.get(0);
+		for( int i = 1; i < transforms.size(); i++ )
+		{
+			R transform = transforms.get(i);
+			boolean didMerge = RealViewsSimplifyUtils.tryPreConcatenate(base, transform );
+			didSimplify = didSimplify || didMerge;
+			if( didMerge )
+				indexesToRemove.add(i);
+			else
+				base = transform;
+		}
+
+		if( didSimplify )
+			while( !indexesToRemove.isEmpty())
+				transforms.remove( (int)indexesToRemove.pollLast());
+
+		return didSimplify;
 	}
 }

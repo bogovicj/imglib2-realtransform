@@ -262,4 +262,33 @@ public class InvertibleRealTransformSequenceTest
 		lCopy.applyInverse( x1, y );
 		Assert.assertArrayEquals( x, x1, 0.001 );
 	}
+
+	@Test
+	public void testUnpack()
+	{
+		final InvertibleRealTransformSequence l = new InvertibleRealTransformSequence();
+		add( l );
+		InvertibleRealTransformSequence lorig = l.copy();
+
+		// add the list to itself
+		// should behave just like applying l twice
+		// this results in a StackOverflowError without unpacking
+		l.add( l );
+
+		final double[] y1orig = new double[ 3 ];
+		final RealPoint py1orig = RealPoint.wrap( y1orig );
+
+		final double[] y1 = new double[ 3 ];
+		final RealPoint py1 = RealPoint.wrap( y1 );
+
+		lorig.apply( px, py1orig );
+		lorig.apply( py1orig, py1orig );
+
+		// apply l once
+		l.apply( px, py1 );
+
+		Assert.assertArrayEquals( y1orig, y1, 0.001 );
+		Assert.assertTrue( "check that unpacking really happened",
+				( l.transforms.size() == 2 * lorig.transforms.size()) );
+	}
 }
