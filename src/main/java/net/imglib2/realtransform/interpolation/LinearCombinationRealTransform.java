@@ -12,10 +12,6 @@ import net.imglib2.type.numeric.real.AbstractRealType;
 
 public class LinearCombinationRealTransform extends AbstractRealType<LinearCombinationRealTransform> implements RealTransform {
 	
-//	private final Map<RealTransform,DoubleType> transforms;
-
-//	private List<WeightedRealTransfom> transforms;
-
 	private List<RealTransform> transforms;
 
 	private List<Double> weights;
@@ -39,31 +35,11 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 		weights = new ArrayList<>();
 	}
 
-//	public LinearCombinationRealTransfom(RealTransform t) {
-//		this(t.numSourceDimensions());
-//		if (t != null) {
-//			if (t instanceof WeightedRealTransfom)
-//				transforms.add((WeightedRealTransfom) t);
-//			else
-//				transforms.add(new WeightedRealTransfom(t));
-//		}
-//	}
-//	
-//	private LinearCombinationRealTransfom( List<WeightedRealTransfom> ts ) { 
-//		transforms = new ArrayList<>();
-//		transforms.addAll(ts);
-//	}
-
 	public LinearCombinationRealTransform(RealTransform t) {
 		this(t.numSourceDimensions());
 		if (t != null) {
-//			if (t instanceof LinearCombinationRealTransform)
-//				transforms.add((LinearCombinationRealTransform) t);
-//			else
-//				transforms.add(new LinearCombinationRealTransform(t));
 			transforms.add(t);
 			weights.add(1.0);
-//			add( t );
 		}
 	}
 
@@ -94,15 +70,11 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 		}
 		else
 		{
-			Arrays.fill(target, 0);
-			
 			double ww = 1;
+			Arrays.fill(target, 0);
 			for( int i = 0; i < transforms.size(); i++ )
 			{
 				ww = weights.get(i);
-//				ww = w * weights.get(i);
-//				WeightedRealTransfom xfm = transforms.get(i);
-//				LinearCombinationRealTransfom xfm = transforms.get(i);
 				RealTransform xfm = transforms.get(i);
 				xfm.apply(source, tmp);
 				System.out.println( "  lincombo " + i + " : " + Arrays.toString(target));
@@ -127,12 +99,8 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 			for( int i = 0; i < transforms.size(); i++ )
 			{
 				ww = weights.get(i);
-//				ww = w * weights.get(i);
-//				WeightedRealTransfom xfm = transforms.get(i);
-//				LinearCombinationRealTransfom xfm = transforms.get(i);
 				RealTransform xfm = transforms.get(i);
 				xfm.apply(source, tmpPt);
-				System.out.println( "  lincombo " + i + " : " + accumulator );
 				for (int d = 0; d < nd; d++)
 					accumulator.setPosition( 
 							accumulator.getDoublePosition(d) + 
@@ -145,11 +113,6 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 	
 	public void set( final LinearCombinationRealTransform c )
 	{
-//		w = 1.0;
-//		transforms.clear();
-//		weights.clear();
-//		add( c );
-
 		w = c.w; 
 
 		transforms.clear();
@@ -158,28 +121,12 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 		weights.clear();
 		weights.addAll(c.weights);
 	}
-
-//	public void addV1( final RealTransform c )
-//	{
-//		if( nd > 0 && ( c.numSourceDimensions() != nd  || c.numTargetDimensions() != nd  ))
-//			return; // do nothing I guess
-//		
-//		if( c instanceof WeightedRealTransfom )
-//			transforms.add((WeightedRealTransfom)c);
-//		else
-//			transforms.add(new WeightedRealTransfom(c));
-//	}
 	
 	@Override
 	public void add( final LinearCombinationRealTransform c )
 	{
 		if( nd > 0 && ( c.numSourceDimensions() != nd  || c.numTargetDimensions() != nd  ))
 			return; // do nothing I guess
-		
-//		if( c instanceof LinearCombinationRealTransfom )
-//			transforms.add((LinearCombinationRealTransfom)c);
-//		else
-//			transforms.add(new LinearCombinationRealTransfom(c));
 
 		transforms.add( c );
 		weights.add(1.0);
@@ -187,7 +134,6 @@ public class LinearCombinationRealTransform extends AbstractRealType<LinearCombi
 
 	@Override
 	public LinearCombinationRealTransform copy() {
-//		return new LinearCombinationRealTransform( transforms);
 		return new LinearCombinationRealTransform( transforms, weights );
 	}
 	

@@ -1,7 +1,6 @@
 package net.imglib2.realtransform;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import net.imglib2.RandomAccess;
 import net.imglib2.RealPoint;
@@ -10,7 +9,6 @@ import net.imglib2.RealRandomAccessible;
 import net.imglib2.img.list.ListImg;
 import net.imglib2.interpolation.randomaccess.NLinearInterpolatorFactory;
 import net.imglib2.realtransform.interpolation.LinearCombinationRealTransform;
-import net.imglib2.realtransform.interpolation.WeightedRealTransfom;
 import net.imglib2.view.ExtendedRandomAccessibleInterval;
 import net.imglib2.view.Views;
 
